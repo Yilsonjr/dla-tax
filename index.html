@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLA TAX SERVICES - INTAKE FORM 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="app.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    </style>
+</head>
+<body class="p-4 md:p-10">
+
+    <div class="max-w-5xl mx-auto">
+        <!-- HEADER -->
+        <div class="bg-green-900 text-white p-10 rounded-t-2xl text-center shadow-2xl relative overflow-hidden">
+            <div class="relative z-10">
+                <h1 class="text-4xl font-black tracking-tighter">DLA TAX SERVICES</h1>
+                <h2 class="text-xl font-bold mt-2 text-green-200 uppercase tracking-widest">Taxpayer Intake Form 2026</h2>
+                <p class="mt-4 text-sm opacity-80 font-medium max-w-2xl mx-auto italic">Precise Preparation for Maximum Refunds</p>
+            </div>
+            <div class="absolute top-0 right-0 w-32 h-32 bg-green-800 rounded-full -mr-16 -mt-16 opacity-50"></div>
+        </div>
+
+        <form id="fullTaxForm" class="mt-8 space-y-8">
+            <!-- CONFIGURACIÓN DE ENVÍO (IMPORTANTE: REEMPLAZA EL VALUE) -->
+            <input type="hidden" id="google_script_url" value="TU_URL_DE_GOOGLE_APPS_SCRIPT_AQUI">
+
+            <!-- CONFIGURACIÓN INICIAL -->
+            <!-- INITIAL SETUP -->
+            <div class="section-card">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="label-title">Preparation Date / Fecha</label>
+                        <input type="date" id="form_date" required>
+                    </div>
+                    <div>
+                        <label class="label-title">Prior client? / ¿Cliente anterior?</label>
+                        <select id="prior_client" required>
+                            <option value="">Select...</option>
+                            <option value="Yes">Yes / Sí</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="label-title">Referral (Who referred you?)</label>
+                        <input type="text" id="referral" placeholder="Name or Social Media">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 01 TAXPAYER INFORMATION -->
+            <div class="section-card border-l-8 border-green-700">
+                <h3 class="font-black text-green-900 mb-6 flex items-center gap-2 text-lg uppercase tracking-tight">
+                    <span class="bg-green-700 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">01</span>
+                    Taxpayer Information / Información del Contribuyente
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="label-title">Full Name (Nombre Completo)</label>
+                        <input type="text" id="tp_name" placeholder="As on SSN Card" required>
+                    </div>
+                    <div>
+                        <label class="label-title">Date of Birth / Fecha Nac.</label>
+                        <input type="date" id="tp_dob" required>
+                    </div>
+                    <div>
+                        <label class="label-title">SSN or ITIN</label>
+                        <input type="text" id="tp_ssn" placeholder="XXX-XX-XXXX" required>
+                    </div>
+                    <div>
+                        <label class="label-title">Phone Number / Teléfono</label>
+                        <input type="text" id="tp_phone" required>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="label-title">Email Address / Correo</label>
+                        <input type="email" id="tp_email" required>
+                    </div>
+                    <div>
+                        <label class="label-title">Occupation / Ocupación</label>
+                        <input type="text" id="tp_occ">
+                    </div>
+                    
+                    <div class="md:col-span-4 id-grid">
+                        <div>
+                            <label class="label-title">ID Type / Tipo de ID</label>
+                            <select id="tp_id_type">
+                                <option value="Driver License">Driver License</option>
+                                <option value="State ID">State ID</option>
+                                <option value="Passport">Passport</option>
+                                <option value="Work Permit">Work Permit</option>
+                            </select>
+                        </div>
+                        <div><label class="label-title">ID Number</label><input type="text" id="tp_id_num"></div>
+                        <div><label class="label-title">Issue State / Estado</label><input type="text" id="tp_id_state"></div>
+                        <div><label class="label-title">Issue Date</label><input type="date" id="tp_id_issue"></div>
+                        <div><label class="label-title">Exp. Date</label><input type="date" id="tp_id_exp"></div>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="label-title">Months lived in USA during 2025? / Meses en USA</label>
+                        <input type="number" id="tp_months_usa" min="0" max="12">
+                    </div>
+                    <div>
+                        <label class="label-title">US Citizen? / ¿Ciudadano?</label>
+                        <div class="flex gap-4 mt-2">
+                            <label class="flex items-center gap-1 text-sm"><input type="radio" name="tp_citizen" value="Yes"> Yes / Sí</label>
+                            <label class="flex items-center gap-1 text-sm"><input type="radio" name="tp_citizen" value="No"> No</label>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="label-title">Full-time student last year? / ¿Fue estudiante tiempo completo?</label>
+                        <div class="flex gap-4 mt-2">
+                            <label class="flex items-center gap-1 text-sm"><input type="radio" name="tp_student" value="Yes" onchange="toggleStudentInfo()"> Yes / Sí</label>
+                            <label class="flex items-center gap-1 text-sm"><input type="radio" name="tp_student" value="No" onchange="toggleStudentInfo()" checked> No</label>
+                        </div>
+                    </div>
+                    <div id="student_extra_info" class="md:col-span-2 hidden">
+                        <label class="label-title">Institution Name / Institución</label>
+                        <input type="text" id="tp_student_inst" placeholder="College or University Name">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 02 SPOUSE QUESTION & INFORMATION -->
+            <div class="section-card">
+                <div class="mb-6">
+                    <label class="label-title text-indigo-700">Do you have a spouse? / ¿Tiene cónyuge?</label>
+                    <div class="flex gap-8 mt-2">
+                        <label class="flex items-center gap-2 font-bold"><input type="radio" name="has_spouse" value="Yes" onchange="checkSpouseLogic()"> Yes / Sí</label>
+                        <label class="flex items-center gap-2 font-bold"><input type="radio" name="has_spouse" value="No" onchange="checkSpouseLogic()" checked> No</label>
+                    </div>
+                </div>
+
+                <div id="spouse_section" class="border-t pt-6 border-indigo-100 hidden">
+                    <h3 class="font-black text-indigo-900 mb-6 uppercase tracking-tight">Spouse Information / Información del Cónyuge</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="label-title">Full Name / Nombre Completo</label>
+                            <input type="text" id="sp_name">
+                        </div>
+                        <div>
+                            <label class="label-title">Date of Birth / Fecha Nac.</label>
+                            <input type="date" id="sp_dob">
+                        </div>
+                        <div>
+                            <label class="label-title">SSN / ITIN</label>
+                            <input type="text" id="sp_ssn">
+                        </div>
+                        <div class="md:col-span-4 id-grid">
+                            <div><label class="label-title">ID Type</label><input type="text" id="sp_id_type"></div>
+                            <div><label class="label-title">ID Number</label><input type="text" id="sp_id_num"></div>
+                            <div><label class="label-title">Issue State</label><input type="text" id="sp_id_state"></div>
+                            <div><label class="label-title">Exp. Date</label><input type="date" id="sp_id_exp"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 03 ADDRESS -->
+            <div class="section-card border-l-8 border-amber-600">
+                <h3 class="font-black text-amber-900 mb-6 uppercase tracking-tight">Residential Address / Dirección</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="md:col-span-3"><label class="label-title">Street Address</label><input type="text" id="addr_main" required></div>
+                    <div><label class="label-title">Apt/Ste</label><input type="text" id="addr_apt"></div>
+                    <div class="md:col-span-2"><label class="label-title">City</label><input type="text" id="addr_city" required></div>
+                    <div><label class="label-title">State</label><input type="text" id="addr_state" required></div>
+                    <div><label class="label-title">Zip Code</label><input type="text" id="addr_zip" required></div>
+                </div>
+            </div>
+
+            <!-- 04 FILING STATUS & DEPENDENTS -->
+            <div class="section-card border-l-8 border-cyan-600">
+                <h3 class="font-black text-cyan-900 mb-6 uppercase tracking-tight">Filing Status & Dependents / Estado Civil</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <label class="label-title text-cyan-700">Tax Filing Status / Estado Civil</label>
+                        <select id="filing_status" onchange="checkSpouseLogic()" required>
+                            <option value="Single">Single / Soltero</option>
+                            <option value="Married Filing Jointly">Married Filing Jointly / Casado conjunto</option>
+                            <option value="Married Filing Separately">Married Filing Separately / Casado separado</option>
+                            <option value="Head of Household">Head of Household / Jefe de Familia</option>
+                            <option value="Qualifying Widow(er)">Qualifying Widow(er)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="label-title text-cyan-700">Do you have dependents? / ¿Tiene dependientes?</label>
+                        <div class="flex gap-8 mt-2">
+                            <label class="flex items-center gap-2 font-bold"><input type="radio" name="has_deps" value="Yes" onchange="toggleDeps()"> Yes / Sí</label>
+                            <label class="flex items-center gap-2 font-bold"><input type="radio" name="has_deps" value="No" onchange="toggleDeps()" checked> No</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DEPENDENTS SECTION -->
+                <div id="deps_section" class="mt-8 pt-8 border-t border-cyan-100 hidden">
+                    <h3 class="font-black text-cyan-900 mb-4 uppercase text-sm">Dependents Information / Información de Dependientes</h3>
+                    <div id="deps_container" class="space-y-4"></div>
+                    
+                    <div class="mt-6 flex flex-wrap items-center gap-4">
+                        <button type="button" onclick="addDep()" class="px-4 py-2 bg-cyan-600 text-white rounded-lg font-bold text-xs hover:bg-cyan-700 transition-colors shadow-md uppercase tracking-tighter">+ ADD DEPENDENT / AGREGAR</button>
+                    </div>
+
+                    <!-- CHILDCARE TRIGGER -->
+                    <div class="mt-8 p-4 bg-cyan-50 rounded-xl border border-cyan-100">
+                        <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                            <div>
+                                <h4 class="font-bold text-cyan-900 text-sm">Do you pay for childcare?</h4>
+                                <p class="text-[10px] text-cyan-700 uppercase font-semibold">¿Paga por cuidado de niños?</p>
+                            </div>
+                            <div class="flex items-center gap-6">
+                                <label class="flex items-center gap-2 font-bold text-sm"><input type="radio" name="has_cc" value="Yes" onchange="toggleCC()"> Yes / Sí</label>
+                                <label class="flex items-center gap-2 font-bold text-sm"><input type="radio" name="has_cc" value="No" onchange="toggleCC()" checked> No</label>
+                            </div>
+                        </div>
+                        
+                        <div id="cc_section" class="hidden mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-cyan-200 pt-6">
+                            <h4 class="md:col-span-3 font-black text-cyan-800 text-xs uppercase underline">Childcare Information</h4>
+                            <div class="md:col-span-2"><label class="label-title">Provider Name</label><input type="text" id="cc_name" placeholder="Name or Center"></div>
+                            <div><label class="label-title">Tax ID / SSN</label><input type="text" id="cc_id"></div>
+                            <div class="md:col-span-3"><label class="label-title">Provider Address</label><input type="text" id="cc_addr"></div>
+                            <div><label class="label-title">Total Amount Paid</label><input type="number" id="cc_amt"></div>
+                            <div><label class="label-title">Frequency</label><select id="cc_freq"><option>Weekly</option><option>Monthly</option><option>Total Year</option></select></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUESTIONNAIRE -->
+            <div class="section-card">
+                <h3 class="font-black text-slate-800 mb-6 uppercase tracking-tight underline decoration-green-500 decoration-4 underline-offset-8">Information Questionnaire / Cuestionario</h3>
+                <div class="space-y-1" id="matrix_container">
+                    <div class="matrix-row font-black text-[10px] text-slate-400 bg-slate-50 p-2 rounded">
+                        <div>Topic / Question (Tema / Pregunta)</div>
+                        <div class="text-center">YES / SÍ</div>
+                        <div class="text-center">NO</div>
+                    </div>
+                </div>
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="label-title">Other Income / Comments (Otros Ingresos)</label>
+                        <textarea id="other_comments" rows="3" placeholder="Any details not covered above..."></textarea>
+                    </div>
+                    <div>
+                        <label class="label-title">Payment Method / Método de Pago</label>
+                        <select id="fee_method">
+                            <option>Zelle</option>
+                            <option>Cash App</option>
+                            <option>Venmo</option>
+                            <option>Cash</option>
+                            <option>Credit/Debit Card</option>
+                            <option>Deduct from Refund (Fees Apply)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DIRECT DEPOSIT -->
+            <div class="section-card border-l-8 border-emerald-600 bg-emerald-50/30">
+                <h3 class="font-black text-emerald-900 mb-6 uppercase tracking-tight">Direct Deposit / Depósito Directo</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div><label class="label-title">Bank Name / Banco</label><input type="text" id="bank_name"></div>
+                    <div><label class="label-title">Routing Number</label><input type="text" id="bank_rt"></div>
+                    <div><label class="label-title">Account Number</label><input type="text" id="bank_acc"></div>
+                    <div>
+                        <label class="label-title">Account Type / Tipo de Cuenta</label>
+                        <div class="flex gap-4 mt-2">
+                            <label class="text-sm"><input type="radio" name="bank_type" value="Checking"> Checking / Corriente</label>
+                            <label class="text-sm"><input type="radio" name="bank_type" value="Savings"> Savings / Ahorro</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DISCLAIMER -->
+            <div class="section-card bg-slate-900 text-white rounded-xl mb-4 p-8">
+                <h3 class="text-green-400 font-black mb-6 uppercase tracking-tighter text-xl italic underline decoration-2">Renuncia de Responsabilidad / Disclaimer</h3>
+                
+                <div class="space-y-2 text-[11px]">
+                    <div class="disclaimer-item">
+                        <div>
+                            <p class="font-bold">1. Accuracy of Information / Precisión de la Información</p>
+                            <p class="text-slate-400 italic">I declare that the information provided is true, correct, and complete. / Declaro que la información es verdadera.</p>
+                        </div>
+                        <input type="text" placeholder="Initials" class="bg-slate-800 border-slate-600 text-white text-center h-8 px-2 uppercase text-[10px]" required>
+                    </div>
+                    <div class="disclaimer-item">
+                        <div>
+                            <p class="font-bold">2. Supporting Documentation / Documentación de Soporte</p>
+                            <p class="text-slate-400 italic">I possess all original documents required to support this return. / Poseo los documentos originales.</p>
+                        </div>
+                        <input type="text" placeholder="Initials" class="bg-slate-800 border-slate-600 text-white text-center h-8 px-2 uppercase text-[10px]" required>
+                    </div>
+                    <div class="disclaimer-item">
+                        <div>
+                            <p class="font-bold">3. Preparation Fees / Honorarios de Preparación</p>
+                            <p class="text-slate-400 italic">I understand that fees are due upon completion and are non-refundable. / Entiendo que los honorarios no son reembolsables.</p>
+                        </div>
+                        <input type="text" placeholder="Initials" class="bg-slate-800 border-slate-600 text-white text-center h-8 px-2 uppercase text-[10px]" required>
+                    </div>
+                    <div class="disclaimer-item border-none">
+                        <div>
+                            <p class="font-bold">4. Final Review / Revisión Final</p>
+                            <p class="text-slate-400 italic">I am responsible for reviewing the final copy of my tax return. / Soy responsable de revisar la copia final.</p>
+                        </div>
+                        <input type="text" placeholder="Initials" class="bg-slate-800 border-slate-600 text-white text-center h-8 px-2 uppercase text-[10px]" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIGNATURES -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div id="tp_sig_card" class="bg-white border p-6 rounded-xl shadow-sm">
+                    <label class="label-title mb-4">Taxpayer Signature / Firma</label>
+                    <canvas id="sig_tp" class="signature-canvas"></canvas>
+                    <div class="flex justify-between items-center mt-2">
+                        <button type="button" onclick="clearSig('sig_tp')" class="text-[9px] font-bold text-red-500 uppercase tracking-tighter">Clear / Limpiar</button>
+                        <input type="date" id="sig_tp_date" class="w-auto text-xs py-1 border-none bg-slate-50">
+                    </div>
+                </div>
+                <div id="sp_sig_card" class="bg-white border p-6 rounded-xl shadow-sm hidden">
+                    <label class="label-title mb-4">Spouse Signature / Firma del Cónyuge</label>
+                    <canvas id="sig_sp" class="signature-canvas"></canvas>
+                    <div class="flex justify-between items-center mt-2">
+                        <button type="button" onclick="clearSig('sig_sp')" class="text-[9px] font-bold text-red-500 uppercase tracking-tighter">Clear / Limpiar</button>
+                        <input type="date" id="sig_sp_date" class="w-auto text-xs py-1 border-none bg-slate-50">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBMIT -->
+            <div class="pb-24 pt-10 text-center">
+                <button type="submit" class="group bg-green-700 hover:bg-green-800 text-white px-10 py-5 rounded-full font-black text-lg shadow-2xl transition-all transform hover:scale-105 active:scale-95 flex items-center gap-3 mx-auto uppercase">
+                    SUBMIT & GENERATE PDF / ENVIAR
+                    <svg class="w-6 h-6 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 14l-7 7m0 0l-7-7m7 7V3" stroke-width="3"/></svg>
+                </button>
+                <p class="text-slate-400 text-[10px] mt-4 uppercase font-bold tracking-widest">DLA Tax Services © 2026</p>
+            </div>
+        </form>
+    </div>
+
+    <div id="loader" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center z-[200]">
+        <div class="bg-white p-8 rounded-2xl text-center shadow-2xl max-w-xs w-full">
+            <div class="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+            <h3 class="text-lg font-black text-slate-800 uppercase italic">Creating Document</h3>
+        </div>
+    </div>
+
+</body>
+</html>
