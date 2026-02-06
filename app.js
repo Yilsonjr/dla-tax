@@ -1,12 +1,24 @@
 
         const questionData = [
-            "W-2 (Wages from Employer)", "1099-NEC / 1099-K (Self Employed)", "Unemployment Compensation (1099-G)",
-            "Interest/Dividends (1099-INT/DIV)", "Retirement/IRA Distributions (1099-R)", "Social Security Benefits (SSA-1099)",
-            "Gambling Winnings (W-2G)", "Health Insurance through Marketplace (1095-A)", "Student Loan Interest (1098-E)",
-            "Mortgage Interest (1098)", "Charity Donations", "Medical/Dental Expenses",
-            "Child Support Paid/Received", "Identity Theft Protection PIN (IP PIN)", "Did you receive a Refund Advance last year?",
-            "Foreign Bank Accounts?", "Virtual Currency / Crypto Transactions?", "Any dependent in College? (1098-T)"
-        ];
+    "Unemployment / Desempleo",
+    "Mortgage (Form 1098) / Hipoteca (Formulario 1098)",
+    "Public Assistance / Asistencia Pública",
+    "Real Estate Taxes / Impuestos a la Propiedad",
+    "Food Stamps / Cupones de Alimentos",
+    "Medical Expenses / Gastos Médicos",
+    "Social Security or SSI / Seguro Social o SSI",
+    "Medical Insurance / Seguro Médico",
+    "Section 8 (Rental Assistance) / Sección 8 (Ayuda para la Renta)",
+    "Theft Loss / Pérdida por Robo",
+    "Child Support / Manutención de Hijos",
+    "Donations / Donaciones",
+    "Gambling Income / Ingresos por Lotería o Juegos de Azar",
+    "Gambling Losses / Pérdidas por Lotería o Juegos de Azar",
+    "Interest Income / Ingresos por Intereses",
+    "Car Loan / Préstamo de Vehículo",
+    "Pensions or IRA / Pensiones o IRA"
+];
+
 
         const mContainer = document.getElementById('matrix_container');
         questionData.forEach(q => {
@@ -36,6 +48,9 @@
             // Mostrar/Ocultar campos de información y sección de firma
             document.getElementById('spouse_section').classList.toggle('hidden', !showSpouse);
             document.getElementById('sp_sig_card').classList.toggle('hidden', !showSpouse);
+            if (showSpouse) {
+    initSig('sig_sp'); // <-- inicializa aquí cuando ya es visible
+  }
         }
 
         function toggleDeps() {
@@ -75,14 +90,19 @@
 
         function initSig(id) {
             const canvas = document.getElementById(id);
-            const ctx = canvas.getContext('2d');
-            let drawing = false;
-            const resize = () => {
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
-                ctx.scale(ratio, ratio);
-            };
+  if (!canvas || canvas.dataset.initialized === '1') return; // <-- agrega esta línea
+  canvas.dataset.initialized = '1'; // <-- y esta
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+  const resize = () => {
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    const displayWidth = canvas.offsetWidth;
+    const displayHeight = canvas.offsetHeight;
+    canvas.width = displayWidth * ratio;
+    canvas.height = displayHeight * ratio;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // reset
+    ctx.scale(ratio, ratio);
+  };
             window.addEventListener('resize', resize); resize();
             const getPos = (e) => {
                 const rect = canvas.getBoundingClientRect();
@@ -103,7 +123,7 @@
         }
 
         initSig('sig_tp');
-        initSig('sig_sp');
+        checkSpouseLogic();
 
         document.getElementById('fullTaxForm').onsubmit = async (e) => {
             e.preventDefault();
