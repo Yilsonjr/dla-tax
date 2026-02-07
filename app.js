@@ -125,12 +125,432 @@
         initSig('sig_tp');
         checkSpouseLogic();
 
+        function collectFormData() {
+            const data = {
+                // Initial Setup
+                form_date: document.getElementById('form_date').value,
+                prior_client: document.getElementById('prior_client').value,
+                referral: document.getElementById('referral').value,
+                
+                // Taxpayer Information
+                tp_name: document.getElementById('tp_name').value,
+                tp_dob: document.getElementById('tp_dob').value,
+                tp_ssn: document.getElementById('tp_ssn').value,
+                tp_phone: document.getElementById('tp_phone').value,
+                tp_email: document.getElementById('tp_email').value,
+                tp_occ: document.getElementById('tp_occ').value,
+                tp_id_type: document.getElementById('tp_id_type').value,
+                tp_id_num: document.getElementById('tp_id_num').value,
+                tp_id_state: document.getElementById('tp_id_state').value,
+                tp_id_issue: document.getElementById('tp_id_issue').value,
+                tp_id_exp: document.getElementById('tp_id_exp').value,
+                tp_citizen: document.querySelector('input[name="tp_citizen"]:checked')?.value || '',
+                tp_student: document.querySelector('input[name="tp_student"]:checked')?.value || '',
+                tp_student_inst: document.getElementById('tp_student_inst').value,
+                
+                // Spouse Information
+                has_spouse: document.querySelector('input[name="has_spouse"]:checked')?.value || '',
+                sp_name: document.getElementById('sp_name').value,
+                sp_dob: document.getElementById('sp_dob').value,
+                sp_ssn: document.getElementById('sp_ssn').value,
+                sp_ocu: document.getElementById('sp_ocu').value,
+                sp_cell: document.getElementById('sp_cell').value,
+                sp_email: document.getElementById('sp_email').value,
+                sp_id_type: document.getElementById('sp_id_type').value,
+                sp_id_num: document.getElementById('sp_id_num').value,
+                sp_id_state: document.getElementById('sp_id_state').value,
+                sp_id_exp: document.getElementById('sp_id_exp').value,
+                
+                // Address
+                addr_main: document.getElementById('addr_main').value,
+                addr_apt: document.getElementById('addr_apt').value,
+                addr_city: document.getElementById('addr_city').value,
+                addr_state: document.getElementById('addr_state').value,
+                addr_zip: document.getElementById('addr_zip').value,
+                
+                // Filing Status & Dependents
+                filing_status: document.getElementById('filing_status').value,
+                has_deps: document.querySelector('input[name="has_deps"]:checked')?.value || '',
+                
+                // Childcare
+                has_cc: document.querySelector('input[name="has_cc"]:checked')?.value || '',
+                cc_name: document.getElementById('cc_name').value,
+                cc_phone: document.getElementById('cc_phone').value,
+                cc_id: document.getElementById('cc_id').value,
+                cc_addr: document.getElementById('cc_addr').value,
+                cc_amt: document.getElementById('cc_amt').value,
+                cc_freq: document.getElementById('cc_freq').value,
+                
+                // Questionnaire
+                other_comments: document.getElementById('other_comments').value,
+                fee_method: document.getElementById('fee_method').value,
+                
+                // Direct Deposit
+                bank_name: document.getElementById('bank_name').value,
+                bank_rt: document.getElementById('bank_rt').value,
+                bank_acc: document.getElementById('bank_acc').value,
+                bank_type: document.querySelector('input[name="bank_type"]:checked')?.value || '',
+                
+                // Signatures
+                sig_tp_date: document.getElementById('sig_tp_date').value,
+                sig_sp_date: document.getElementById('sig_sp_date').value,
+                sig_tp: document.getElementById('sig_tp').toDataURL('image/png'),
+                sig_sp: document.getElementById('sig_sp').toDataURL('image/png'),
+                
+                // Dependents
+                dependents: []
+            };
+            
+            // Recopilar datos de dependientes
+            const depsContainer = document.getElementById('deps_container');
+            Array.from(depsContainer.children).forEach(child => {
+                data.dependents.push({
+                    name: child.querySelector('.dep-name').value,
+                    dob: child.querySelector('.dep-dob').value,
+                    ssn: child.querySelector('.dep-ssn').value,
+                    relation: child.querySelector('.dep-rel').value,
+                    months: child.querySelector('.dep-months').value
+                });
+            });
+            
+            // Recopilar respuestas del cuestionario
+            data.questionnaire = {};
+            questionData.forEach(q => {
+                const id = q.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                data.questionnaire[id] = document.querySelector(`input[name="q_${id}"]:checked`)?.value || '';
+            });
+            
+            return data;
+        }
+
+        async function sendToGoogleDrive(formData) {
+            const scriptUrl = document.getElementById('google_script_url').value;
+            
+            if (!scriptUrl) {
+                console.warn('Google Apps Script URL no configurada. El formulario se guardará localmente.');
+                return false;
+            }
+            
+            try {
+                console.log('Enviando datos a Google Drive...');
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    body: JSON.stringify(formData),
+                    mode: 'no-cors'
+                });
+                
+                console.log('Datos enviados exitosamente a Google Drive');
+                return true;
+            } catch (error) {
+                console.error('Error enviando a Google Drive:', error);
+                return false;
+            }
+        }
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+            let yPos = 20;
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const margin = 15;
+            const labelColumn = margin;
+            const valueColumn = margin + 60;
+            const lineHeight = 8;
+            const sectionSpacing = 12;
+
+            // Función para verificar y agregar página
+            const checkPageBreak = (space = 15) => {
+                if (yPos + space > pageHeight - 15) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+            };
+
+            // Agregar línea separadora
+            const addSeparator = () => {
+                checkPageBreak(8);
+                doc.setDrawColor(100, 100, 100);
+                doc.line(margin, yPos, pageWidth - margin, yPos);
+                yPos += 8;
+            };
+
+            // Agregar título de sección
+            const addSectionTitle = (title) => {
+                checkPageBreak(12);
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'bold');
+                doc.setTextColor(25, 118, 75);
+                doc.text(title, margin, yPos);
+                yPos += 10;
+                doc.setTextColor(0, 0, 0);
+            };
+
+            // Agregar campo con etiqueta y valor
+            const addField = (label, value) => {
+                checkPageBreak(8);
+                doc.setFontSize(9);
+                doc.setFont(undefined, 'bold');
+                doc.setTextColor(40, 40, 40);
+                doc.text(label + ':', labelColumn, yPos);
+                
+                doc.setFont(undefined, 'normal');
+                doc.setTextColor(60, 60, 60);
+                const valueText = String(value || '').substring(0, 60);
+                doc.text(valueText, valueColumn, yPos);
+                yPos += lineHeight;
+            };
+
+            // HEADER
+            doc.setFontSize(20);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(25, 118, 75);
+            doc.text('DLA TAX SERVICES', margin, yPos);
+            yPos += 10;
+            
+            doc.setFontSize(14);
+            doc.setTextColor(50, 50, 50);
+            doc.text('TAXPAYER INTAKE FORM 2026', margin, yPos);
+            yPos += 12;
+            
+            addSeparator();
+            yPos += 2;
+
+            // INITIAL SETUP
+            addSectionTitle('INITIAL SETUP');
+            addField('Preparation Date', document.getElementById('form_date').value);
+            addField('Prior Client', document.getElementById('prior_client').value);
+            addField('Referral', document.getElementById('referral').value);
+            yPos += sectionSpacing;
+            addSeparator();
+            yPos += 2;
+
+            // TAXPAYER INFORMATION
+            addSectionTitle('01. TAXPAYER INFORMATION');
+            addField('Full Name', document.getElementById('tp_name').value);
+            addField('Date of Birth', document.getElementById('tp_dob').value);
+            addField('SSN / ITIN', document.getElementById('tp_ssn').value);
+            addField('Phone', document.getElementById('tp_phone').value);
+            addField('Email', document.getElementById('tp_email').value);
+            addField('Occupation', document.getElementById('tp_occ').value);
+            addField('ID Type', document.getElementById('tp_id_type').value);
+            addField('ID Number', document.getElementById('tp_id_num').value);
+            addField('ID State', document.getElementById('tp_id_state').value);
+            addField('ID Issue Date', document.getElementById('tp_id_issue').value);
+            addField('ID Exp Date', document.getElementById('tp_id_exp').value);
+            addField('US Citizen', document.querySelector('input[name="tp_citizen"]:checked')?.value || '');
+            addField('Student', document.querySelector('input[name="tp_student"]:checked')?.value || '');
+            addField('Student Institution', document.getElementById('tp_student_inst').value);
+            yPos += sectionSpacing;
+            addSeparator();
+            yPos += 2;
+
+            // SPOUSE INFORMATION
+            const hasSpouse = document.querySelector('input[name="has_spouse"]:checked')?.value === 'Yes';
+            if (hasSpouse) {
+                addSectionTitle('02. SPOUSE INFORMATION');
+                addField('Spouse Name', document.getElementById('sp_name').value);
+                addField('Spouse DOB', document.getElementById('sp_dob').value);
+                addField('Spouse SSN', document.getElementById('sp_ssn').value);
+                addField('Spouse Occupation', document.getElementById('sp_ocu').value);
+                addField('Spouse Cell', document.getElementById('sp_cell').value);
+                addField('Spouse Email', document.getElementById('sp_email').value);
+                addField('Spouse ID Type', document.getElementById('sp_id_type').value);
+                addField('Spouse ID Number', document.getElementById('sp_id_num').value);
+                addField('Spouse ID State', document.getElementById('sp_id_state').value);
+                addField('Spouse ID Exp', document.getElementById('sp_id_exp').value);
+                yPos += sectionSpacing;
+                addSeparator();
+                yPos += 2;
+            }
+
+            // ADDRESS
+            addSectionTitle('03. RESIDENTIAL ADDRESS');
+            addField('Street Address', document.getElementById('addr_main').value);
+            addField('Apt/Suite', document.getElementById('addr_apt').value);
+            addField('City', document.getElementById('addr_city').value);
+            addField('State', document.getElementById('addr_state').value);
+            addField('Zip Code', document.getElementById('addr_zip').value);
+            yPos += sectionSpacing;
+            addSeparator();
+            yPos += 2;
+
+            // FILING STATUS & DEPENDENTS
+            addSectionTitle('04. FILING STATUS & DEPENDENTS');
+            addField('Filing Status', document.getElementById('filing_status').value);
+            addField('Has Dependents', document.querySelector('input[name="has_deps"]:checked')?.value || '');
+            
+            const hasDeps = document.querySelector('input[name="has_deps"]:checked')?.value === 'Yes';
+            if (hasDeps) {
+                const depsContainer = document.getElementById('deps_container');
+                Array.from(depsContainer.children).forEach((child, idx) => {
+                    yPos += 4;
+                    checkPageBreak(10);
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'bold');
+                    doc.setTextColor(25, 118, 75);
+                    doc.text(`Dependent #${idx + 1}`, margin, yPos);
+                    yPos += 8;
+                    doc.setTextColor(0, 0, 0);
+                    
+                    addField('Name', child.querySelector('.dep-name').value);
+                    addField('DOB', child.querySelector('.dep-dob').value);
+                    addField('SSN', child.querySelector('.dep-ssn').value);
+                    addField('Relation', child.querySelector('.dep-rel').value);
+                    addField('Months with you', child.querySelector('.dep-months').value);
+                });
+            }
+            yPos += sectionSpacing;
+            addSeparator();
+            yPos += 2;
+
+            // CHILDCARE
+            const hasCC = document.querySelector('input[name="has_cc"]:checked')?.value === 'Yes';
+            if (hasCC) {
+                addSectionTitle('CHILDCARE INFORMATION');
+                addField('Provider Name', document.getElementById('cc_name').value);
+                addField('Provider Phone', document.getElementById('cc_phone').value);
+                addField('Provider Tax ID', document.getElementById('cc_id').value);
+                addField('Provider Address', document.getElementById('cc_addr').value);
+                addField('Amount Paid', document.getElementById('cc_amt').value);
+                addField('Frequency', document.getElementById('cc_freq').value);
+                yPos += sectionSpacing;
+                addSeparator();
+                yPos += 2;
+            }
+
+            // QUESTIONNAIRE
+            addSectionTitle('INFORMATION QUESTIONNAIRE');
+            questionData.forEach(q => {
+                const id = q.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                const answer = document.querySelector(`input[name="q_${id}"]:checked`)?.value || '';
+                addField(q, answer);
+            });
+            addField('Other Income / Comments', document.getElementById('other_comments').value);
+            addField('Payment Method', document.getElementById('fee_method').value);
+            yPos += sectionSpacing;
+            addSeparator();
+            yPos += 2;
+
+            // DIRECT DEPOSIT
+            addSectionTitle('DIRECT DEPOSIT');
+            addField('Bank Name', document.getElementById('bank_name').value);
+            addField('Routing Number', document.getElementById('bank_rt').value);
+            addField('Account Number', document.getElementById('bank_acc').value);
+            addField('Account Type', document.querySelector('input[name="bank_type"]:checked')?.value || '');
+            yPos += sectionSpacing;
+            addSeparator();
+            yPos += 2;
+
+            // SIGNATURES
+            addSectionTitle('SIGNATURES');
+            const sigTp = document.getElementById('sig_tp');
+            const sigSp = document.getElementById('sig_sp');
+            
+            if (sigTp && sigTp.toDataURL() !== 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==') {
+                checkPageBreak(30);
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'bold');
+                doc.setTextColor(40, 40, 40);
+                doc.text('Taxpayer Signature:', margin, yPos);
+                yPos += 10;
+                
+                const sigTpImg = sigTp.toDataURL('image/png');
+                doc.addImage(sigTpImg, 'PNG', margin, yPos, 50, 20);
+                yPos += 25;
+                
+                addField('Signature Date', document.getElementById('sig_tp_date').value);
+                yPos += 4;
+            }
+
+            if (hasSpouse && sigSp && sigSp.toDataURL() !== 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==') {
+                checkPageBreak(30);
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'bold');
+                doc.setTextColor(40, 40, 40);
+                doc.text('Spouse Signature:', margin, yPos);
+                yPos += 10;
+                
+                const sigSpImg = sigSp.toDataURL('image/png');
+                doc.addImage(sigSpImg, 'PNG', margin, yPos, 50, 20);
+                yPos += 25;
+                
+                addField('Spouse Signature Date', document.getElementById('sig_sp_date').value);
+            }
+
+            const fileName = `DLA_Tax_Intake_${new Date().getTime()}.pdf`;
+            doc.save(fileName);
+        }
+
         document.getElementById('fullTaxForm').onsubmit = async (e) => {
             e.preventDefault();
+            const form = e.currentTarget;
             document.getElementById('loader').classList.remove('hidden');
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.text("DLA TAX SERVICES - INTAKE 2026", 10, 10);
-            doc.save(`DLA_Tax_Intake_2026.pdf`);
-            document.getElementById('loader').classList.add('hidden');
+            try {
+                // Generar PDF localmente
+                generatePDF();
+                
+                // Recopilar datos del formulario
+                const formData = collectFormData();
+                
+                // Enviar a Google Drive
+                await sendToGoogleDrive(formData);
+                
+                document.getElementById('loader').classList.add('hidden');
+
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Enviado',
+                    text: 'Tu formulario fue enviado exitosamente y guardado en Google Drive.',
+                    confirmButtonText: 'Aceptar'
+                });
+
+                // Resetear formulario y UI asociada
+                form.reset();
+
+                // Limpiar dependientes dinámicos
+                const depsContainer = document.getElementById('deps_container');
+                if (depsContainer) depsContainer.innerHTML = '';
+
+                // Ocultar secciones condicionales
+                document.getElementById('spouse_section')?.classList.add('hidden');
+                document.getElementById('sp_sig_card')?.classList.add('hidden');
+                document.getElementById('deps_section')?.classList.add('hidden');
+                document.getElementById('cc_section')?.classList.add('hidden');
+
+                // Limpiar firmas
+                clearSig('sig_tp');
+                clearSig('sig_sp');
+
+                // Restablecer selects con placeholder vacío si aplica
+                document.querySelectorAll('select').forEach(s => {
+                    if (s.querySelector('option[value=""]')) s.value = '';
+                });
+
+                // Asegurar radios de "No"
+                const ensureChecked = (name, value) => {
+                    const el = document.querySelector(`input[name="${name}"][value="${value}"]`);
+                    if (el) el.checked = true;
+                };
+                ensureChecked('has_spouse','No');
+                ensureChecked('has_deps','No');
+                ensureChecked('has_cc','No');
+
+                // Reaplicar lógica dependiente del estado
+                checkSpouseLogic();
+                toggleDeps();
+                toggleCC();
+
+                // Volver arriba
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (err) {
+                document.getElementById('loader').classList.add('hidden');
+                console.error('Error:', err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo generar o enviar el formulario. Inténtalo nuevamente.',
+                    confirmButtonText: 'Cerrar'
+                });
+            }
         };

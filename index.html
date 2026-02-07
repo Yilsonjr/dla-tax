@@ -8,6 +8,7 @@
     <script src="app.js" defer></script>
     <link rel="stylesheet" type="text/css" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
     </style>
@@ -26,8 +27,9 @@
         </div>
 
         <form id="fullTaxForm" class="mt-8 space-y-8">
-            <!-- CONFIGURACIÓN DE ENVÍO (IMPORTANTE: REEMPLAZA EL VALUE) -->
-            <input type="hidden" id="google_script_url" value="TU_URL_DE_GOOGLE_APPS_SCRIPT_AQUI">
+            <!-- CONFIGURACIÓN DE ENVÍO (IMPORTANTE: REEMPLAZA EL VALUE CON TU URL DE GOOGLE APPS SCRIPT) -->
+            <!-- Ejemplo: https://script.google.com/macros/d/1ABC123XYZ.../usercontent -->
+            <input type="hidden" id="google_script_url" value="https://script.google.com/macros/s/AKfycbykMDHZWldloYwl99h6tyhU0Qt7bBWjq4NOp0xNYrZ75y-ocVqsNTdaaXdEE5G-UHJ4dw/exec">
 
             <!-- CONFIGURACIÓN INICIAL -->
             <!-- INITIAL SETUP -->
@@ -145,7 +147,7 @@
                         </div>
                         <div>
                             <label class="label-title">SSN / ITIN</label>
-                            <input type="text" id="sp_ssn" required>
+                            <input type="text" id="sp_ssn" name="sp_ssn">
                         </div>
                         <div>
                             <label class="label-title">Occupation / Ocupación</label>
@@ -228,14 +230,14 @@
                         
                         <div id="cc_section" class="hidden mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-cyan-200 pt-6">
                             <h4 class="md:col-span-3 font-black text-cyan-800 text-xs uppercase underline">Childcare Information</h4>
-                            <div class="md:col-span-2"><label class="label-title">Provider Name</label><input type="text" id="cc_name" placeholder="Name or Center"></div>
+                            <div class="md:col-span-2"><label class="label-title">Provider Name</label><input type="text" id="cc_name" name="cc_name" placeholder="Name or Center"></div>
                             <div>
                             <label class="label-title">Tel / Cell</label>
-                            <input type="tel" id="sp_ocu">
+                            <input type="tel" id="cc_phone" name="cc_phone">
                         </div>
                             <div>
                                 <label class="label-title">Tax ID / SSN</label>
-                                <input type="text" id="cc_id" required>
+                                <input type="text" id="cc_id" name="cc_id">
                             </div>
                             <div class="md:col-span-3">
                                 <label class="label-title">Provider Address</label>
