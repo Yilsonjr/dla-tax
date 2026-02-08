@@ -225,42 +225,10 @@ const questionData = [
         }
 
         // función: sendToGoogleDrive(formData)
-        async function sendToGoogleDrive(formData) {
-            // ... existing code ...
-            const scriptUrl = document.getElementById('google_script_url').value;
-            if (!scriptUrl) {
-                console.warn('Google Apps Script URL no configurada. El formulario se guardará localmente.');
-                return false;
-            }
         
-            try {
-                console.log('Enviando datos a Google Drive...');
-                const response = await fetch(scriptUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-        
-                if (!response.ok) {
-                    const text = await response.text().catch(() => '');
-                    throw new Error(`Error HTTP ${response.status} ${text}`);
-                }
-        
-                const result = await response.json();
-                if (!result.success) {
-                    throw new Error(result.message || 'Error desconocido del servidor');
-                }
-        
-                console.log('Datos enviados exitosamente a Google Drive', result);
-                // Aquí puedes mostrar enlaces al usuario (PDF y carpeta)
-                alert(`PDF creado:\nArchivo: ${result.fileName}\nCarpeta: ${result.folderUrl}\nPDF: ${result.fileUrl}`);
-                return true;
-            } catch (error) {
-                console.error('Error enviando a Google Drive:', error);
-                alert(`No se pudo crear el PDF/carpeta:\n${error.message}`);
-                return false;
-            }
-        }
+        async function sendToGoogleDrive(formData) { const scriptUrl = document.getElementById('google_script_url').value; if (!scriptUrl) { console.warn('Google Apps Script URL no configurada.'); return false; } try { console.log('Enviando datos a Google Drive...'); const response = await fetch(scriptUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) }); const text = await response.text(); console.log('Estado GAS:', response.status, text); if (!response.ok) throw new Error('Respuesta no OK de GAS'); let json; try { json = JSON.parse(text); } catch {} if (json && json.success) { console.log('Archivo:', json.fileName); console.log('fileUrl:', json.fileUrl); console.log('folderUrl:', json.folderUrl); // Opcional: alert para abrir directo alert(PDF creado:\nArchivo: ${json.fileName}\nCarpeta: ${json.folderUrl}\nPDF: ${json.fileUrl}); } else { console.warn('Respuesta sin success=true:', text); } return true; } catch (error) { console.error('Error enviando a Google Drive:', error); return false; } }
+
+
 
         function generatePDF() {
             const { jsPDF } = window.jspdf;
