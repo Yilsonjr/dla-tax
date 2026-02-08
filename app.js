@@ -1,5 +1,6 @@
 
-        const questionData = [
+
+const questionData = [
     "Unemployment / Desempleo",
     "Mortgage (Form 1098) / Hipoteca (Formulario 1098)",
     "Public Assistance / Asistencia Pública",
@@ -223,26 +224,40 @@
             return data;
         }
 
+        // función: sendToGoogleDrive(formData)
         async function sendToGoogleDrive(formData) {
+            // ... existing code ...
             const scriptUrl = document.getElementById('google_script_url').value;
-            
             if (!scriptUrl) {
                 console.warn('Google Apps Script URL no configurada. El formulario se guardará localmente.');
                 return false;
             }
-            
+        
             try {
                 console.log('Enviando datos a Google Drive...');
                 const response = await fetch(scriptUrl, {
                     method: 'POST',
-                    body: JSON.stringify(formData),
-                    mode: 'no-cors'
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
                 });
-                
-                console.log('Datos enviados exitosamente a Google Drive');
+        
+                if (!response.ok) {
+                    const text = await response.text().catch(() => '');
+                    throw new Error(`Error HTTP ${response.status} ${text}`);
+                }
+        
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.message || 'Error desconocido del servidor');
+                }
+        
+                console.log('Datos enviados exitosamente a Google Drive', result);
+                // Aquí puedes mostrar enlaces al usuario (PDF y carpeta)
+                alert(`PDF creado:\nArchivo: ${result.fileName}\nCarpeta: ${result.folderUrl}\nPDF: ${result.fileUrl}`);
                 return true;
             } catch (error) {
                 console.error('Error enviando a Google Drive:', error);
+                alert(`No se pudo crear el PDF/carpeta:\n${error.message}`);
                 return false;
             }
         }

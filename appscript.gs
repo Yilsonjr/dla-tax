@@ -6,46 +6,55 @@ function doPost(e) {
   try {
     Logger.log('=== INICIO DE PROCESAMIENTO ===');
     Logger.log('Datos recibidos: ' + e.postData.contents.substring(0, 100));
-    
     const data = JSON.parse(e.postData.contents);
     Logger.log('Datos parseados correctamente');
     Logger.log('Nombre del cliente: ' + data.tp_name);
-    
+
     // Crear PDF con los datos
     Logger.log('Creando PDF...');
     const pdfBlob = createPDFFromData(data);
     Logger.log('PDF creado exitosamente');
-    
-    // Guardar en Google Drive
+
+    // Guardar en Google Drive: crear carpeta por cliente
     Logger.log('Guardando en Google Drive...');
-    const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-    const fileName = `DLA_Tax_${data.tp_name || 'Unknown'}_${new Date().getTime()}.pdf`;
-    const file = folder.createFile(pdfBlob);
-    file.setName(fileName);
-    Logger.log('Archivo guardado en Drive: ' + fileName);
-    
+    const parentFolder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+    const clientName = (data.tp_name || 'Unknown')
+      .trim()
+      .replace(/[\\/:*?"<>|]/g, '_'); // nombre seguro para carpeta
+    const clientFolder = getOrCreateClientFolder(parentFolder, clientName);
+
+    const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd_HHmmss');
+    const fileName = `DLA_Tax_${clientName}_${timestamp}.pdf`;
+    const file = clientFolder.createFile(pdfBlob).setName(fileName);
+
+    Logger.log('Archivo guardado: ' + fileName + ' en carpeta: ' + clientFolder.getName());
+
     // Guardar en hoja de cálculo
     Logger.log('Guardando en hoja de cálculo...');
     saveToSpreadsheet(data);
     Logger.log('Datos guardados en hoja de cálculo');
-    
+
     Logger.log('=== FIN DE PROCESAMIENTO EXITOSO ===');
-    
-    return ContentService.createTextOutput(JSON.stringify({
-      success: true,
-      message: 'Formulario guardado exitosamente en Google Drive',
-      fileName: fileName
-    })).setMimeType(ContentService.MimeType.JSON);
-    
+
+    return ContentService.createTextOutput(
+      JSON.stringify({
+        success: true,
+        message: 'Formulario guardado exitosamente en Google Drive',
+        fileName,
+        fileUrl: file.getUrl(),
+        folderUrl: clientFolder.getUrl(),
+      })
+    ).setMimeType(ContentService.MimeType.JSON);
   } catch (error) {
     Logger.log('=== ERROR EN PROCESAMIENTO ===');
     Logger.log('Error: ' + error.toString());
     Logger.log('Stack: ' + error.stack);
-    
-    return ContentService.createTextOutput(JSON.stringify({
-      success: false,
-      message: 'Error: ' + error.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(
+      JSON.stringify({
+        success: false,
+        message: 'Error: ' + error.toString(),
+      })
+    ).setMimeType(ContentService.MimeType.JSON);
   }
 }
 
@@ -54,8 +63,6 @@ function createPDFFromData(data) {
   try {
     const doc = DocumentApp.create(`DLA_Tax_${data.tp_name || 'Form'}_${new Date().getTime()}`);
     const body = doc.getBody();
-    
-    // Limpiar párrafo por defecto
     body.clear();
     
     // Estilos
@@ -259,19 +266,35 @@ function createPDFFromData(data) {
     
     // SIGNATURES
     addSectionHeader(body, 'SIGNATURES', sectionStyle);
-    addTwoColumnFields(body,
-      ['Taxpayer Signature Date', data.sig_tp_date],
-      ['Spouse Signature Date', data.sig_sp_date],
-      fieldStyle);
-    
+    addTwoColumnFields(body, ['Taxpayer Signature Date', data.sig_tp_date], ['Spouse Signature Date', data.sig_sp_date], fieldStyle);
+
+    // Insertar imagen de la firma si existe
+    const tpSigBlob = dataUrlToBlob(data.sig_tp, 'tp_signature.png');
+    if (tpSigBlob) {
+      const p = body.appendParagraph('Taxpayer Signature:');
+      p.setAttributes(fieldStyle);
+      const img = body.appendImage(tpSigBlob);
+      img.setWidth(200);
+    }
+    const spSigBlob = dataUrlToBlob(data.sig_sp, 'sp_signature.png');
+    if (spSigBlob) {
+      const p = body.appendParagraph('Spouse Signature:');
+      p.setAttributes(fieldStyle);
+      const img = body.appendImage(spSigBlob);
+      img.setWidth(200);
+    }
+
+    // Guardar y cerrar antes de convertir a PDF
+    doc.saveAndClose();
+
     // Convertir a PDF
-    const pdfBlob = doc.getBlob().getAs('application/pdf');
+    const pdfBlob = DriveApp.getFileById(doc.getId()).getAs('application/pdf');
     Logger.log('PDF convertido a blob');
-    
+
     // Eliminar documento temporal
     DriveApp.getFileById(doc.getId()).setTrashed(true);
     Logger.log('Documento temporal eliminado');
-    
+
     return pdfBlob;
   } catch (error) {
     Logger.log('Error en createPDFFromData: ' + error.toString());
@@ -363,4 +386,43 @@ function saveToSpreadsheet(data) {
   } catch (error) {
     Logger.log('Error guardando en hoja de cálculo: ' + error);
   }
+}
+
+// doGet y helpers al final del archivo (si aún no están)
+
+// doGet (health-check para GET en el navegador)
+function doGet() {
+  return ContentService.createTextOutput(
+    JSON.stringify({
+      ok: true,
+      message: 'WebApp activo. Envía datos por POST (JSON) a este mismo URL.'
+    })
+  ).setMimeType(ContentService.MimeType.JSON);
+}
+
+// Crea o devuelve la carpeta del cliente dentro de la carpeta padre
+function getOrCreateClientFolder(parentFolder, clientName) {
+  const it = parentFolder.getFolders();
+  while (it.hasNext()) {
+    const f = it.next();
+    if (f.getName() === clientName) {
+      return f;
+    }
+  }
+  return parentFolder.createFolder(clientName);
+}
+
+// Convierte un dataURL (ej. 'data:image/png;base64,AAA...') a Blob
+function dataUrlToBlob(dataUrl, fileName) {
+  if (!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:')) {
+    return null;
+  }
+  const match = dataUrl.match(/^data:(image\/png|image\/jpeg);base64,(.+)$/);
+  if (!match) {
+    return null;
+  }
+  const contentType = match[1];
+  const base64Data = match[2];
+  const bytes = Utilities.base64Decode(base64Data);
+  return Utilities.newBlob(bytes, contentType, fileName);
 }
