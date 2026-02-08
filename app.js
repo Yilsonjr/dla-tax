@@ -224,9 +224,36 @@ const questionData = [
             return data;
         }
 
-        // función: sendToGoogleDrive(formData)
+        // Envío a backend Node.js/Express
+        // IMPORTANTE: Reemplaza esta URL con la de tu backend desplegado
+        const BACKEND_URL = 'http://localhost:8080/api/forms'; // Cambiar a tu URL de producción
         
-        async function sendToGoogleDrive(formData) { const scriptUrl = document.getElementById('google_script_url').value; if (!scriptUrl) { console.warn('Google Apps Script URL no configurada.'); return false; } try { console.log('Enviando datos a Google Drive...'); const response = await fetch(scriptUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) }); const text = await response.text(); console.log('Estado GAS:', response.status, text); if (!response.ok) throw new Error('Respuesta no OK de GAS'); let json; try { json = JSON.parse(text); } catch {} if (json && json.success) { console.log('Archivo:', json.fileName); console.log('fileUrl:', json.fileUrl); console.log('folderUrl:', json.folderUrl); // Opcional: alert para abrir directo alert(PDF creado:\nArchivo: ${json.fileName}\nCarpeta: ${json.folderUrl}\nPDF: ${json.fileUrl}); } else { console.warn('Respuesta sin success=true:', text); } return true; } catch (error) { console.error('Error enviando a Google Drive:', error); return false; } }
+        async function sendToGoogleDrive(formData) {
+            try {
+                console.log('Enviando datos al backend...');
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                console.log('Respuesta del backend:', response.status, result);
+                
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Error del backend');
+                }
+                
+                console.log('Archivo guardado:', result.fileName);
+                console.log('fileUrl:', result.fileUrl);
+                console.log('folderUrl:', result.folderUrl);
+                
+                return true;
+            } catch (error) {
+                console.error('Error enviando al backend:', error);
+                return false;
+            }
+        }
 
 
 

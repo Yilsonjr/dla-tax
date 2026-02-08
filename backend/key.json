@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "dla-tax",
+  "private_key_id": "c974b80accfe302b693b65d0ca5fda8bce202bb5",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCucdNx3yRfEtxR\nzgfgMQWEldAwQ6vC5ynBJKq8kFLTYYo4SZ7KzyDowdem/lpl2WznsawF6XTqYtfP\nP6HLf/Td/pvHWwnk8SkQ4WvmlaJpZ0R/KAz3jw7ysOmzc4fFnTFCazGubBcxkFA1\nDoqslygXEPmE38PEOhHkfyrSFLk8SGOVSd+U0LHB8EahhR4dvBUP/V1Rm7NRghR/\nmMvwUi9XWtNwkI0DlyBzSjRA7jceTjEXyViQtQfQebCS4RQRRlPoAE3ZfXxyeTrK\n8B1sVIs41EnAhSMVkurX4XzpjdX691CC+UkT5YduglLSvoNMNUaCbhrZN+DfY85f\nFK9n6l1tAgMBAAECggEADTkmozqcJLLReEgAXn+zdeCaAUFCm18aJ1W9YCwmgyHL\n2vFwXoTt7zGGbyutCYxo43VF33AvbcxOpJtOYJZ9/CKeh1xAzJXKnEjM0j6kgDiU\n6iNMkarKoh3upoI1mAa5ja8s0GvJeaHWr/bpZHopeU95l+y9smRefS4gk6qA0hoL\nQtkrXUF6JykYFDqo9/P55zsrAhP1ukURy5IKdupIev9IFt8h9/f6nfI9wXAlY9ri\n4EvaqWTxmHU/RQLdYkId8gkULgt1kjqQ3gtKH8RPJ26qWaroeiLi+beCQifIHu1f\nN99ecLTIH085EDVMk1AHeZWNXmGuGFCP6DddaYiyRwKBgQDacqTc3ixjZQSdHP/i\n2yPpgdhJRXiP8n473Fdo2ZML1wInCapfkAP7iQ8GwtVUu0iit1NPZDesj8u1lrp8\neGBakejQJEiZYIXV0jHV4eBk53Zzs2fck958gKtDfSmgoxKHyAvGg6tck3nb8/fj\nWeYDiHVoDQs/2ZONsYqvoxoiDwKBgQDMbrVryA8eVBiPPuXKlte7q22hheqePHk9\ngxUaPiNoP0QH1jRQ7y0DTZdbcNvR2o1QCAwA2OQ7J1EpEQxnA40mHi/5f1K+WB78\nMZ4OFI2TcvulO9Tf8IEtWqXnKXv51uS70Um319YEIjBbNb4OUj9QopKXVazSzWvb\nmgU2glLUwwKBgQCyJx1dI7R/uzrwB16I3L+FCGgkGYwhmVpp52FCGW9bEJaoz7Er\nDoCw+y5ODUd+Ot8aFPjUnp7pFLzF849TQ7kRJD4CwhSTQazknPAXxocCw+JOqdni\ngpXIZAdImyL/5v6NzhAMbgWrEnsnbuiTehWke/2ERl8OS5uSy2CXrST68QKBgQCK\nU8rscEVSl0K7AqtIZsL5GKko50123qKG7cCErlEVA+ILj3R84ynJF2J4HCiRmdmO\nsrM0i437PMJdEE0dEzkZ9sktgGrDoyrsKMKy8lNN1zrRdme3U6yEvNaPUPGzfyXs\ntFO2UxRcXansvbOpSxvOewLH5c/4H8mAoXovhQV5MwKBgFSc6EfyKjusbQU4OdRe\n31X2uqfu7nEdw7QSinsPnU3efWUKuRYzSA0ssbp2Z4FQGSWA7dvBFHmxmCjnBvma\nXi4EFV/g/+rDWuhfk7Qm8iO3D/KGO1Kvfi1+dsHeSPHViX9sxvKB6P2Sd8YlVBaq\nnOh8KUZvXKyecezlgNJFC9+V\n-----END PRIVATE KEY-----\n",
+  "client_email": "dla-tax@dla-tax.iam.gserviceaccount.com",
+  "client_id": "117207187789077879671",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/dla-tax%40dla-tax.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
