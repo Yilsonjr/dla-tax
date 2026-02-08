@@ -4,9 +4,9 @@
   "description": "Backend para DLA Tax Services - Generación y almacenamiento de PDFs",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
-  },
+  "start": "node backend/src/index.js",
+  "dev": "nodemon backend/src/index.js"
+},
   "keywords": ["tax", "pdf", "google-drive"],
   "author": "",
   "license": "MIT",
