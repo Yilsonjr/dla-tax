@@ -13,8 +13,8 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:5500',
-    'https://yilsondev.github.io',
-    'https://yilsondev.github.io/dla-tax'
+    'https://yilsonjr.github.io',
+    'https://yilsonjr.github.io/dla-tax'
   ],
   methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true
