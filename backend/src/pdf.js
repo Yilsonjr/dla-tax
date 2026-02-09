@@ -130,15 +130,52 @@ async function generatePDF(formData) {
         doc.moveDown(0.3);
       }
 
-      // QUESTIONNAIRE
+      // QUESTIONNAIRE - Usando diseño de tabla de dos columnas
       addSection('INFORMATION QUESTIONNAIRE');
       if (formData.questionnaire) {
         const entries = Object.entries(formData.questionnaire);
-        entries.forEach(([key, value]) => {
-          // Convertir el key a un label legible
-          const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-          addField(label, value || 'No');
-        });
+        const midPoint = Math.ceil(entries.length / 2);
+        const leftColumn = entries.slice(0, midPoint);
+        const rightColumn = entries.slice(midPoint);
+        
+        // Función para truncar texto largo
+        const truncate = (str, maxLen) => str.length > maxLen ? str.substring(0, maxLen - 3) + '...' : str;
+        
+        // Dibujar en dos columnas
+        const maxRows = Math.max(leftColumn.length, rightColumn.length);
+        const col1X = 40;
+        const col2X = 300;
+        const labelWidth = 180;
+        const valueWidth = 60;
+        const rowHeight = 14;
+        let startY = doc.y;
+        
+        for (let i = 0; i < maxRows; i++) {
+          const y = startY + (i * rowHeight);
+          
+          // Columna izquierda
+          if (leftColumn[i]) {
+            const [key1, value1] = leftColumn[i];
+            const label1 = truncate(key1.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 35);
+            doc.fontSize(8).fillColor(textColor).font('Helvetica-Bold');
+            doc.text(label1 + ':', col1X, y, { width: labelWidth, ellipsis: true });
+            doc.fontSize(8).font('Helvetica').fillColor('#555555');
+            doc.text(value1 || 'No', col1X + labelWidth, y, { width: valueWidth, align: 'left' });
+          }
+          
+          // Columna derecha
+          if (rightColumn[i]) {
+            const [key2, value2] = rightColumn[i];
+            const label2 = truncate(key2.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 35);
+            doc.fontSize(8).fillColor(textColor).font('Helvetica-Bold');
+            doc.text(label2 + ':', col2X, y, { width: labelWidth, ellipsis: true });
+            doc.fontSize(8).font('Helvetica').fillColor('#555555');
+            doc.text(value2 || 'No', col2X + labelWidth, y, { width: valueWidth, align: 'left' });
+          }
+        }
+        
+        // Actualizar posición Y después de la tabla
+        doc.y = startY + (maxRows * rowHeight) + 10;
       }
       addTwoFields('Other Income / Comments', formData.other_comments, 'Payment Method', formData.fee_method);
       doc.moveDown(0.3);

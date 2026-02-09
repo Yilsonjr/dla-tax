@@ -34,10 +34,20 @@ async function initializeDrive() {
     const auth = new google.auth.JWT({
       email: credentials.client_email,
       key: credentials.private_key,
-      scopes: ['https://www.googleapis.com/auth/drive']
+      scopes: ['https://www.googleapis.com/auth/drive'],
+      // Esto permite que la Service Account actúe en nombre del usuario
+      // y use la cuota del usuario en lugar de la suya propia
+      subject: credentials.user_email || undefined
     });
 
-    driveClient = google.drive({ version: 'v3', auth });
+    driveClient = google.drive({
+      version: 'v3',
+      auth,
+      params: {
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true
+      }
+    });
     console.log('Google Drive API inicializado correctamente');
     return driveClient;
   } catch (error) {
@@ -56,12 +66,14 @@ async function getOrCreateClientFolder(parentFolderId, clientName) {
     .substring(0, 100);
 
   try {
-    // Buscar si la carpeta ya existe
+    // Buscar si la carpeta ya existe (con soporte para drives compartidos)
     const response = await drive.files.list({
       q: `'${parentFolderId}' in parents and name='${safeName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
       spaces: 'drive',
       fields: 'files(id, name, webViewLink)',
-      pageSize: 1
+      pageSize: 1,
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true
     });
 
     if (response.data.files && response.data.files.length > 0) {
@@ -69,9 +81,10 @@ async function getOrCreateClientFolder(parentFolderId, clientName) {
       return response.data.files[0];
     }
 
-    // Si no existe, crearla
+    // Si no existe, crearla (con soporte para drives compartidos)
     console.log(`Creando carpeta del cliente: ${safeName}`);
     const createResponse = await drive.files.create({
+      supportsAllDrives: true,
       resource: {
         name: safeName,
         mimeType: 'application/vnd.google-apps.folder',
