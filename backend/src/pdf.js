@@ -138,32 +138,47 @@ async function generatePDF(formData) {
         // Configuración de la tabla
         const colQuestionX = 40;
         const colYesX = 420;
-        const colNoX = 470;
+        const colNoX = 480;
         const questionWidth = 370;
-        const checkWidth = 40;
-        const rowHeight = 18;
+        const checkWidth = 50;
+        const rowHeight = 22;
         let startY = doc.y;
         
-        // Dibujar encabezados de tabla
-        doc.fontSize(8).fillColor(titleColor).font('Helvetica-Bold');
-        doc.text('QUESTION', colQuestionX, startY);
-        doc.text('YES', colYesX, startY, { width: checkWidth, align: 'center' });
+        // Dibujar encabezados de tabla bilingües
+        doc.fontSize(7).fillColor(titleColor).font('Helvetica-Bold');
+        doc.text('Topic / Question (Tema / Pregunta)', colQuestionX, startY);
+        doc.text('YES / SÍ', colYesX, startY, { width: checkWidth, align: 'center' });
         doc.text('NO', colNoX, startY, { width: checkWidth, align: 'center' });
         
         // Línea bajo encabezados
-        startY += 14;
-        doc.strokeColor(titleColor).lineWidth(0.5);
-        doc.moveTo(colQuestionX, startY - 4).lineTo(515, startY - 4).stroke();
+        startY += 16;
+        doc.strokeColor(titleColor).lineWidth(1);
+        doc.moveTo(colQuestionX, startY - 4).lineTo(530, startY - 4).stroke();
         
-        // Función para truncar texto largo
-        const truncate = (str, maxLen) => str.length > maxLen ? str.substring(0, maxLen - 3) + '...' : str;
+        // Mapeo completo de preguntas con texto original
+        const questionMap = {
+          'unemployment_desempleo': 'Unemployment / Desempleo',
+          'mortgage_form_1098_hipoteca_formulario_1098': 'Mortgage (Form 1098) / Hipoteca (Formulario 1098)',
+          'public_assistance_asistencia_publica': 'Public Assistance / Asistencia Pública',
+          'real_estate_taxes_impuestos_a_la_propiedad': 'Real Estate Taxes / Impuestos a la Propiedad',
+          'food_stamps_cupones_de_alimentos': 'Food Stamps / Cupones de Alimentos',
+          'medical_expenses_gastos_medicos': 'Medical Expenses / Gastos Médicos',
+          'social_security_or_ssi_seguro_social_o_ssi': 'Social Security or SSI / Seguro Social o SSI',
+          'medical_insurance_seguro_medico': 'Medical Insurance / Seguro Médico',
+          'section_8_rental_assistance_seccion_8_ayuda_para_la_renta': 'Section 8 (Rental Assistance) / Sección 8 (Ayuda para la Renta)',
+          'theft_loss_perdida_por_robo': 'Theft Loss / Pérdida por Robo',
+          'child_support_manutencion_de_hijos': 'Child Support / Manutención de Hijos',
+          'donations_donaciones': 'Donations / Donaciones',
+          'gambling_income_ingresos_por_loteria_o_juegos_de_azar': 'Gambling Income / Ingresos por Lotería o Juegos de Azar',
+          'gambling_losses_perdidas_por_loteria_o_juegos_de_azar': 'Gambling Losses / Pérdidas por Lotería o Juegos de Azar',
+          'interest_income_ingresos_por_intereses': 'Interest Income / Ingresos por Intereses',
+          'car_loan_prestamo_de_vehiculo': 'Car Loan / Préstamo de Vehículo',
+          'pensions_or_ira_pensiones_o_ira': 'Pensions or IRA / Pensiones o IRA'
+        };
         
-        // Función para convertir key del formulario a texto legible
-        const formatQuestion = (key) => {
-          return key
-            .replace(/^q_/i, '')
-            .replace(/_/g, ' ')
-            .replace(/\b\w/g, l => l.toUpperCase());
+        // Función para obtener texto de pregunta
+        const getQuestionText = (key) => {
+          return questionMap[key] || key.replace(/^q_/i, '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         };
         
         // Dibujar cada fila de la tabla
@@ -171,79 +186,111 @@ async function generatePDF(formData) {
           const y = startY + (index * rowHeight);
           
           // Verificar si necesitamos nueva página
-          if (y > 750) {
+          if (y > 720) {
             doc.addPage();
-            startY = 40;
+            startY = 50;
           }
           
           // Dibujar línea de separación sutil
           if (index > 0) {
-            doc.strokeColor('#eeeeee').lineWidth(0.3);
-            doc.moveTo(colQuestionX, y - 2).lineTo(515, y - 2).stroke();
+            doc.strokeColor('#e0e0e0').lineWidth(0.5);
+            doc.moveTo(colQuestionX, y - 4).lineTo(530, y - 4).stroke();
           }
           
-          // Pregunta (texto legible)
-          const questionText = truncate(formatQuestion(key), 55);
+          // Pregunta (texto completo sin truncar)
+          const questionText = getQuestionText(key);
           doc.fontSize(8).fillColor(textColor).font('Helvetica');
-          doc.text(questionText, colQuestionX, y, { width: questionWidth });
+          doc.text(questionText, colQuestionX, y, { width: questionWidth, lineGap: 1 });
           
-          // Marcar X en Sí o No
-          doc.fontSize(10).font('Helvetica-Bold');
+          // Dibujar círculos para selección
+          const circleRadius = 6;
+          const circleY = y + 3;
+          
+          // Círculo para YES
+          doc.strokeColor('#333333').lineWidth(0.5);
+          doc.circle(colYesX + 25, circleY, circleRadius).stroke();
+          
+          // Círculo para NO
+          doc.circle(colNoX + 25, circleY, circleRadius).stroke();
+          
+          // Marcar según respuesta
+          doc.fontSize(8).font('Helvetica-Bold');
           if (value === 'Yes') {
-            doc.fillColor('#197547'); // Verde para Sí
-            doc.text('✓', colYesX + 15, y - 1, { width: checkWidth, align: 'center' });
+            doc.fillColor('#197547'); // Verde
+            doc.text('Yes/Sí', colYesX + 5, circleY - 3, { width: checkWidth, align: 'center' });
           } else if (value === 'No') {
-            doc.fillColor('#cc0000'); // Rojo para No
-            doc.text('✓', colNoX + 15, y - 1, { width: checkWidth, align: 'center' });
+            doc.fillColor('#cc0000'); // Rojo
+            doc.text('No', colNoX + 5, circleY - 3, { width: checkWidth, align: 'center' });
           }
         });
         
         // Actualizar posición Y después de la tabla
-        doc.y = startY + (entries.length * rowHeight) + 15;
+        doc.y = startY + (entries.length * rowHeight) + 20;
       }
-      addTwoFields('Other Income / Comments', formData.other_comments, 'Payment Method', formData.fee_method);
-      doc.moveDown(0.3);
-      doc.strokeColor('#eeeeee').lineWidth(0.5).moveTo(40, doc.y).lineTo(555, doc.y).stroke();
+      // OTHER INCOME & PAYMENT METHOD
+      addSection('OTHER INFORMATION');
+      addField('Other Income / Comments', formData.other_comments || 'N/A');
+      addField('Payment Method', formData.fee_method || 'N/A');
       doc.moveDown(0.3);
 
       // DIRECT DEPOSIT
-      addSection('DIRECT DEPOSIT');
-      addTwoFields('Bank Name', formData.bank_name, 'Routing Number', formData.bank_rt);
-      addTwoFields('Account Number', formData.bank_acc, 'Account Type', formData.bank_type);
-      doc.moveDown(0.3);
-      doc.strokeColor('#eeeeee').lineWidth(0.5).moveTo(40, doc.y).lineTo(555, doc.y).stroke();
+      addSection('DIRECT DEPOSIT INFORMATION');
+      addTwoFields('Bank Name', formData.bank_name || 'N/A', 'Routing Number', formData.bank_rt || 'N/A');
+      addTwoFields('Account Number', formData.bank_acc || 'N/A', 'Account Type', formData.bank_type || 'N/A');
       doc.moveDown(0.3);
 
-      // SIGNATURES
-      addSection('SIGNATURES');
-      addTwoFields('Taxpayer Signature Date', formData.sig_tp_date, 'Spouse Signature Date', formData.sig_sp_date);
+      // SIGNATURES - En la misma página si hay espacio
+      addSection('SIGNATURES & AUTHORIZATION');
+      
+      // Verificar espacio disponible antes de firmas
+      if (doc.y > 650) {
+        doc.addPage();
+      }
+      
+      addTwoFields('Taxpayer Signature Date', formData.sig_tp_date || 'N/A', 'Spouse Signature Date', formData.sig_sp_date || 'N/A');
 
-      // Insertar firmas si existen
-      if (formData.sig_tp && formData.sig_tp.startsWith('data:image')) {
-        try {
-          const sigBuffer = Buffer.from(formData.sig_tp.split(',')[1], 'base64');
-          doc.fontSize(9).fillColor(textColor).font('Helvetica-Bold').text('Taxpayer Signature:');
-          doc.image(sigBuffer, 40, doc.y, { width: 150, height: 60 });
-          doc.moveDown(3);
-        } catch (e) {
-          console.warn('No se pudo insertar firma del contribuyente:', e.message);
+      // Insertar firmas en una fila si existen
+      if ((formData.sig_tp && formData.sig_tp.startsWith('data:image')) ||
+          (formData.has_spouse === 'Yes' && formData.sig_sp && formData.sig_sp.startsWith('data:image'))) {
+        
+        const sigY = doc.y + 10;
+        
+        // Firma del contribuyente
+        if (formData.sig_tp && formData.sig_tp.startsWith('data:image')) {
+          try {
+            const sigBuffer = Buffer.from(formData.sig_tp.split(',')[1], 'base64');
+            doc.fontSize(8).fillColor(textColor).font('Helvetica-Bold').text('Taxpayer Signature:', 40, sigY);
+            doc.image(sigBuffer, 40, sigY + 15, { width: 200, height: 50 });
+          } catch (e) {
+            console.warn('No se pudo insertar firma del contribuyente:', e.message);
+          }
         }
+        
+        // Firma del cónyuge
+        if (formData.has_spouse === 'Yes' && formData.sig_sp && formData.sig_sp.startsWith('data:image')) {
+          try {
+            const sigBuffer = Buffer.from(formData.sig_sp.split(',')[1], 'base64');
+            doc.fontSize(8).fillColor(textColor).font('Helvetica-Bold').text('Spouse Signature:', 300, sigY);
+            doc.image(sigBuffer, 300, sigY + 15, { width: 200, height: 50 });
+          } catch (e) {
+            console.warn('No se pudo insertar firma del cónyuge:', e.message);
+          }
+        }
+        
+        doc.y = sigY + 80;
       }
 
-      if (formData.has_spouse === 'Yes' && formData.sig_sp && formData.sig_sp.startsWith('data:image')) {
-        try {
-          const sigBuffer = Buffer.from(formData.sig_sp.split(',')[1], 'base64');
-          doc.fontSize(9).fillColor(textColor).font('Helvetica-Bold').text('Spouse Signature:');
-          doc.image(sigBuffer, 40, doc.y, { width: 150, height: 60 });
-          doc.moveDown(3);
-        } catch (e) {
-          console.warn('No se pudo insertar firma del cónyuge:', e.message);
-        }
+      // Pie de página - solo en la última página
+      if (doc.y > 700) {
+        doc.addPage();
       }
-
-      // Pie de página
-      doc.moveDown(1);
-      doc.fontSize(8).fillColor('#999999').text('DLA TAX SERVICES © 2026 - Documento generado automáticamente', { align: 'center' });
+      doc.moveDown(2);
+      doc.fontSize(8).fillColor('#666666').text('─────────────────────────────────────────────────────────────────────────────', { align: 'center' });
+      doc.moveDown(0.5);
+      doc.fontSize(9).fillColor(titleColor).font('Helvetica-Bold').text('DLA TAX SERVICES', { align: 'center' });
+      doc.fontSize(8).fillColor('#666666').font('Helvetica').text('Precise Preparation for Maximum Refunds | Preparación Precisa para Máximos Reembolsos', { align: 'center' });
+      doc.moveDown(0.3);
+      doc.fontSize(7).fillColor('#999999').text('© 2026 DLA Tax Services - Document generated automatically / Documento generado automáticamente', { align: 'center' });
 
       doc.end();
     } catch (error) {

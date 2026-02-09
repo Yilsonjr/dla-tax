@@ -64,7 +64,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="md:col-span-2">
                         <label class="label-title">Full Name (Nombre Completo)</label>
-                        <input type="text" id="tp_name" placeholder="As on SSN Card" required>
+                        <input type="text" id="tp_name" placeholder="As on SSN Card" maxlength="9" required>
                     </div>
                     <div>
                         <label class="label-title">Date of Birth / Fecha Nac.</label>
@@ -72,7 +72,7 @@
                     </div>
                     <div>
                         <label class="label-title">SSN or ITIN</label>
-                        <input type="text" id="tp_ssn" placeholder="XXX-XX-XXXX" required>
+                        <input type="text" id="tp_ssn" placeholder="XXX-XX-XXXX" maxlength="9" required>
                     </div>
                     <div>
                         <label class="label-title">Phone Number / Teléfono</label>
@@ -148,7 +148,7 @@
                         </div>
                         <div>
                             <label class="label-title">SSN / ITIN</label>
-                            <input type="text" id="sp_ssn" name="sp_ssn">
+                            <input type="text" id="sp_ssn" name="sp_ssn" maxlength="9">
                         </div>
                         <div>
                             <label class="label-title">Occupation / Ocupación</label>
