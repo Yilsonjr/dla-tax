@@ -11,8 +11,18 @@ async function initializeDrive() {
     let credentials;
     
     if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
-      // Si está en variable de entorno (Cloud Run)
-      credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+      // Si está en variable de entorno (Cloud Run/Render)
+      // Primero intentamos decodificar Base64, si falla usamos el JSON directo
+      const credsBase64 = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+      try {
+        const decoded = Buffer.from(credsBase64, 'base64').toString('utf8');
+        credentials = JSON.parse(decoded);
+        console.log('Credenciales decodificadas desde Base64');
+      } catch (e) {
+        // Si falla la decodificación Base64, intentamos parsear directamente
+        credentials = JSON.parse(credsBase64);
+        console.log('Credenciales parseadas directamente como JSON');
+      }
     } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
       // Si es una ruta a archivo (desarrollo local)
       const fs = require('fs');
