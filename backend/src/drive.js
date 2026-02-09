@@ -89,7 +89,7 @@ async function getOrCreateClientFolder(parentFolderId, clientName) {
 }
 
 async function uploadToDrive(pdfBuffer, clientName) {
-  const drive = await initializeDrive();
+  const driveClient = await initializeDrive();
   const parentFolderId = process.env.DRIVE_FOLDER_ID;
 
   if (!parentFolderId) {
@@ -97,7 +97,7 @@ async function uploadToDrive(pdfBuffer, clientName) {
   }
 
   try {
-    // Obtener o crear carpeta del cliente
+    // Obtener o crear carpeta del cliente (usando supportsAllDrives para evitar error de cuota)
     const clientFolder = await getOrCreateClientFolder(parentFolderId, clientName);
     
     // Crear nombre del archivo
@@ -113,7 +113,9 @@ async function uploadToDrive(pdfBuffer, clientName) {
     bufferStream.push(null);
 
     // Subir archivo a la carpeta del cliente
-    const uploadResponse = await drive.files.create({
+    // Usamos supportsAllDrives para que use la cuota de la cuenta propietaria
+    const uploadResponse = await driveClient.files.create({
+      supportsAllDrives: true,
       resource: {
         name: fileName,
         mimeType: 'application/pdf',
