@@ -134,15 +134,11 @@ async function generatePDF(formData) {
       addSection('INFORMATION QUESTIONNAIRE');
       if (formData.questionnaire) {
         const entries = Object.entries(formData.questionnaire);
-        for (let i = 0; i < entries.length; i += 2) {
-          const [key1, value1] = entries[i];
-          const [key2, value2] = entries[i + 1] || [null, null];
-          const label1 = key1.replace(/_/g, ' ').substring(0, 25);
-          const label2 = key2 ? key2.replace(/_/g, ' ').substring(0, 25) : '';
-          if (value1 || value2) {
-            addTwoFields(label1, value1, label2, value2);
-          }
-        }
+        entries.forEach(([key, value]) => {
+          // Convertir el key a un label legible
+          const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          addField(label, value || 'No');
+        });
       }
       addTwoFields('Other Income / Comments', formData.other_comments, 'Payment Method', formData.fee_method);
       doc.moveDown(0.3);

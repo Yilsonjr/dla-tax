@@ -497,14 +497,16 @@ const questionData = [
             const form = e.currentTarget;
             document.getElementById('loader').classList.remove('hidden');
             try {
-                // Generar PDF localmente
-                generatePDF();
-                
                 // Recopilar datos del formulario
                 const formData = collectFormData();
                 
-                // Enviar a Google Drive
-                await sendToGoogleDrive(formData);
+                // Enviar a Google Drive primero
+                const driveSuccess = await sendToGoogleDrive(formData);
+                
+                // Solo generar PDF localmente si el envío al backend fue exitoso
+                if (driveSuccess) {
+                    generatePDF();
+                }
                 
                 document.getElementById('loader').classList.add('hidden');
 

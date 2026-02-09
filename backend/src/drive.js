@@ -106,6 +106,12 @@ async function uploadToDrive(pdfBuffer, clientName) {
 
     console.log(`Subiendo archivo: ${fileName} a carpeta: ${clientFolder.name}`);
 
+    // Convertir Buffer a stream para Google Drive
+    const { Readable } = require('stream');
+    const bufferStream = new Readable();
+    bufferStream.push(pdfBuffer);
+    bufferStream.push(null);
+
     // Subir archivo a la carpeta del cliente
     const uploadResponse = await drive.files.create({
       resource: {
@@ -115,7 +121,7 @@ async function uploadToDrive(pdfBuffer, clientName) {
       },
       media: {
         mimeType: 'application/pdf',
-        body: pdfBuffer
+        body: bufferStream
       },
       fields: 'id, name, webViewLink, webContentLink'
     });
