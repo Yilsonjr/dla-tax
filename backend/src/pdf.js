@@ -130,52 +130,76 @@ async function generatePDF(formData) {
         doc.moveDown(0.3);
       }
 
-      // QUESTIONNAIRE - Usando diseño de tabla de dos columnas
+      // QUESTIONNAIRE - Tabla profesional con tres columnas: Pregunta | Sí | No
       addSection('INFORMATION QUESTIONNAIRE');
       if (formData.questionnaire) {
         const entries = Object.entries(formData.questionnaire);
-        const midPoint = Math.ceil(entries.length / 2);
-        const leftColumn = entries.slice(0, midPoint);
-        const rightColumn = entries.slice(midPoint);
+        
+        // Configuración de la tabla
+        const colQuestionX = 40;
+        const colYesX = 420;
+        const colNoX = 470;
+        const questionWidth = 370;
+        const checkWidth = 40;
+        const rowHeight = 18;
+        let startY = doc.y;
+        
+        // Dibujar encabezados de tabla
+        doc.fontSize(8).fillColor(titleColor).font('Helvetica-Bold');
+        doc.text('QUESTION', colQuestionX, startY);
+        doc.text('YES', colYesX, startY, { width: checkWidth, align: 'center' });
+        doc.text('NO', colNoX, startY, { width: checkWidth, align: 'center' });
+        
+        // Línea bajo encabezados
+        startY += 14;
+        doc.strokeColor(titleColor).lineWidth(0.5);
+        doc.moveTo(colQuestionX, startY - 4).lineTo(515, startY - 4).stroke();
         
         // Función para truncar texto largo
         const truncate = (str, maxLen) => str.length > maxLen ? str.substring(0, maxLen - 3) + '...' : str;
         
-        // Dibujar en dos columnas
-        const maxRows = Math.max(leftColumn.length, rightColumn.length);
-        const col1X = 40;
-        const col2X = 300;
-        const labelWidth = 180;
-        const valueWidth = 60;
-        const rowHeight = 14;
-        let startY = doc.y;
+        // Función para convertir key del formulario a texto legible
+        const formatQuestion = (key) => {
+          return key
+            .replace(/^q_/i, '')
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, l => l.toUpperCase());
+        };
         
-        for (let i = 0; i < maxRows; i++) {
-          const y = startY + (i * rowHeight);
+        // Dibujar cada fila de la tabla
+        entries.forEach(([key, value], index) => {
+          const y = startY + (index * rowHeight);
           
-          // Columna izquierda
-          if (leftColumn[i]) {
-            const [key1, value1] = leftColumn[i];
-            const label1 = truncate(key1.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 35);
-            doc.fontSize(8).fillColor(textColor).font('Helvetica-Bold');
-            doc.text(label1 + ':', col1X, y, { width: labelWidth, ellipsis: true });
-            doc.fontSize(8).font('Helvetica').fillColor('#555555');
-            doc.text(value1 || 'No', col1X + labelWidth, y, { width: valueWidth, align: 'left' });
+          // Verificar si necesitamos nueva página
+          if (y > 750) {
+            doc.addPage();
+            startY = 40;
           }
           
-          // Columna derecha
-          if (rightColumn[i]) {
-            const [key2, value2] = rightColumn[i];
-            const label2 = truncate(key2.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 35);
-            doc.fontSize(8).fillColor(textColor).font('Helvetica-Bold');
-            doc.text(label2 + ':', col2X, y, { width: labelWidth, ellipsis: true });
-            doc.fontSize(8).font('Helvetica').fillColor('#555555');
-            doc.text(value2 || 'No', col2X + labelWidth, y, { width: valueWidth, align: 'left' });
+          // Dibujar línea de separación sutil
+          if (index > 0) {
+            doc.strokeColor('#eeeeee').lineWidth(0.3);
+            doc.moveTo(colQuestionX, y - 2).lineTo(515, y - 2).stroke();
           }
-        }
+          
+          // Pregunta (texto legible)
+          const questionText = truncate(formatQuestion(key), 55);
+          doc.fontSize(8).fillColor(textColor).font('Helvetica');
+          doc.text(questionText, colQuestionX, y, { width: questionWidth });
+          
+          // Marcar X en Sí o No
+          doc.fontSize(10).font('Helvetica-Bold');
+          if (value === 'Yes') {
+            doc.fillColor('#197547'); // Verde para Sí
+            doc.text('✓', colYesX + 15, y - 1, { width: checkWidth, align: 'center' });
+          } else if (value === 'No') {
+            doc.fillColor('#cc0000'); // Rojo para No
+            doc.text('✓', colNoX + 15, y - 1, { width: checkWidth, align: 'center' });
+          }
+        });
         
         // Actualizar posición Y después de la tabla
-        doc.y = startY + (maxRows * rowHeight) + 10;
+        doc.y = startY + (entries.length * rowHeight) + 15;
       }
       addTwoFields('Other Income / Comments', formData.other_comments, 'Payment Method', formData.fee_method);
       doc.moveDown(0.3);
