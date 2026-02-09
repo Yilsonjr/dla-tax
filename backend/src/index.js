@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const { generatePDF } = require('./pdf');
-const { uploadToDrive } = require('./drive');
+const { uploadToCloudinary } = require('./cloudinary');
 const { validateFormData } = require('./validators');
 
 const app = express();
@@ -52,20 +52,20 @@ app.post('/api/forms', async (req, res) => {
     const pdfBuffer = await generatePDF(formData);
     console.log('PDF generado exitosamente');
 
-    // Subir a Google Drive
-    console.log('Subiendo a Google Drive...');
-    const driveResult = await uploadToDrive(pdfBuffer, formData.tp_name);
-    console.log('Archivo guardado en Drive:', driveResult.fileName);
+    // Subir a Cloudinary
+    console.log('Subiendo a Cloudinary...');
+    const cloudinaryResult = await uploadToCloudinary(pdfBuffer, formData.tp_name);
+    console.log('Archivo guardado en Cloudinary:', cloudinaryResult.fileName);
 
     console.log('=== FIN PROCESAMIENTO EXITOSO ===');
 
     res.json({
       success: true,
-      message: 'Formulario guardado exitosamente en Google Drive',
-      fileName: driveResult.fileName,
-      fileUrl: driveResult.fileUrl,
-      fileId: driveResult.fileId,
-      folderUrl: driveResult.folderUrl
+      message: 'Formulario guardado exitosamente en Cloudinary',
+      fileName: cloudinaryResult.fileName,
+      fileUrl: cloudinaryResult.fileUrl,
+      fileId: cloudinaryResult.fileId,
+      folderUrl: cloudinaryResult.folderUrl
     });
 
   } catch (error) {
