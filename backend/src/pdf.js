@@ -1,5 +1,98 @@
 const PDFDocument = require('pdfkit');
+const PDFDocumentTable = require('pdfkit-table');
 const { Buffer } = require('buffer');
+
+// Mixin para agregar método table
+PDFDocument.prototype.table = function(tableData, options) {
+  return new Promise((resolve) => {
+    const doc = this;
+    const {
+      headers = [],
+      rows = [],
+      columnsSize = [],
+      x = 40,
+      y = null,
+      width = null,
+      height = null,
+      padding = 5,
+      headerBackgroundColor = '#197547',
+      headerTextColor = '#ffffff',
+      bodyTextColor = '#000000',
+      divider = { horizontal: { width: 0.5, color: '#e0e0e0' }, vertical: null }
+    } = options;
+
+    const startY = y || doc.y;
+    const tableWidth = width || (515 - x);
+    const rowHeight = 18;
+    const headerHeight = 22;
+    
+    // Calcular anchos de columnas si no se especifican
+    const colCount = headers.length;
+    const colWidth = tableWidth / colCount;
+    const finalColSizes = columnsSize.length === colCount ? columnsSize : Array(colCount).fill(colWidth);
+
+    // Dibujar header
+    let currentY = startY;
+    
+    // Fondo del header
+    doc.rect(x, currentY, tableWidth, headerHeight).fill(headerBackgroundColor);
+    
+    // Texto del header
+    headers.forEach((header, i) => {
+      const colX = x + finalColSizes.slice(0, i).reduce((a, b) => a + b, 0) + padding;
+      doc.fillColor(headerTextColor).fontSize(8).font('Helvetica-Bold');
+      doc.text(header.label || '', colX, currentY + 7, {
+        width: finalColSizes[i] - (padding * 2),
+        align: header.align || 'left'
+      });
+    });
+    
+    currentY += headerHeight;
+
+    // Dibujar filas
+    rows.forEach((row, rowIndex) => {
+      // Fondo alternado
+      if (rowIndex % 2 === 1) {
+        doc.fillColor('#f8f8f8').rect(x, currentY, tableWidth, rowHeight).fill();
+      }
+
+      headers.forEach((header, colIndex) => {
+        const colX = x + finalColSizes.slice(0, colIndex).reduce((a, b) => a + b, 0) + padding;
+        const cellWidth = finalColSizes[colIndex] - (padding * 2);
+        
+        // Color especial para columna ANSWER
+        if (header.property === 'answer') {
+          const answer = row[header.property] || '';
+          if (answer.includes('YES')) {
+            doc.fillColor('#dcfce7').rect(x + finalColSizes.slice(0, colIndex).reduce((a, b) => a + b, 0), currentY, finalColSizes[colIndex], rowHeight).fill();
+            doc.fillColor('#16a34a').fontSize(9).font('Helvetica-Bold');
+          } else if (answer === 'NO') {
+            doc.fillColor('#fee2e2').rect(x + finalColSizes.slice(0, colIndex).reduce((a, b) => a + b, 0), currentY, finalColSizes[colIndex], rowHeight).fill();
+            doc.fillColor('#dc2626').fontSize(9).font('Helvetica-Bold');
+          } else {
+            doc.fillColor('#999999').fontSize(9).font('Helvetica');
+          }
+        } else {
+          doc.fillColor('#000000').fontSize(8).font('Helvetica');
+        }
+        
+        doc.text(String(row[header.property] || ''), colX, currentY + 5, {
+          width: cellWidth,
+          align: header.align || 'left'
+        });
+      });
+
+      // Línea horizontal
+      doc.strokeColor('#e0e0e0').lineWidth(0.5);
+      doc.moveTo(x, currentY + rowHeight).lineTo(x + tableWidth, currentY + rowHeight).stroke();
+
+      currentY += rowHeight;
+    });
+
+    doc.y = currentY + 5;
+    resolve();
+  });
+};
 
 async function generatePDF(formData) {
   return new Promise((resolve, reject) => {
@@ -130,26 +223,9 @@ async function generatePDF(formData) {
         doc.moveDown(0.3);
       }
 
-      // QUESTIONNAIRE - Tabla profesional con colores
+      // QUESTIONNAIRE - TABLA REAL CON PDFKIT-TABLE
       addSection('INFORMATION QUESTIONNAIRE');
       if (formData.questionnaire) {
-        // Definir tabla
-        const tableX = 40;
-        const tableWidth = 515;
-        const questionColWidth = tableWidth * 0.70;
-        const answerColWidth = tableWidth * 0.30;
-        const rowHeight = 20;
-        let y = doc.y;
-        
-        // Encabezados de tabla
-        doc.fillColor('#197547'); // Verde corporativo
-        doc.rect(tableX, y, tableWidth, rowHeight).fill();
-        doc.fillColor('#ffffff').fontSize(8).font('Helvetica-Bold');
-        doc.text('TOPIC / QUESTION (TEMA / PREGUNTA)', tableX + 5, y + 6);
-        doc.text('ANSWER / RESPUESTA', tableX + questionColWidth + 5, y + 6, { width: answerColWidth - 10, align: 'center' });
-        
-        y += rowHeight;
-        
         // Debug: mostrar las claves que llegan
         const qKeys = Object.keys(formData.questionnaire);
         console.log('Keys recibidas del cuestionario:', qKeys);
@@ -175,72 +251,44 @@ async function generatePDF(formData) {
           { patterns: ['pensions', 'ira'], text: 'Pensions or IRA / Pensiones o IRA' }
         ];
         
-        // Dibujar cada fila
-        questionDefs.forEach((qDef, idx) => {
-          // Verificar espacio para nueva página
-          if (y > 700) {
-            doc.addPage();
-            y = 50;
-            
-            // Re-dibujar encabezado
-            doc.fillColor('#197547');
-            doc.rect(tableX, y, tableWidth, rowHeight).fill();
-            doc.fillColor('#ffffff').fontSize(8).font('Helvetica-Bold');
-            doc.text('TOPIC / QUESTION (TEMA / PREGUNTA)', tableX + 5, y + 6);
-            doc.text('ANSWER / RESPUESTA', tableX + questionColWidth + 5, y + 6, { width: answerColWidth - 10, align: 'center' });
-            y += rowHeight;
-          }
-          
-          // Buscar respuesta
-          let answer = '';
+        // Preparar datos de la tabla
+        const tableData = {
+          headers: [
+            { label: 'TOPIC / QUESTION (TEMA / PREGUNTA)', property: 'question', width: 385 },
+            { label: 'ANSWER / RESPUESTA', property: 'answer', width: 130, align: 'center' }
+          ],
+          rows: []
+        };
+        
+        // Llenar filas
+        questionDefs.forEach((qDef) => {
+          let answer = 'N/A';
           for (const key of qKeys) {
             const lowerKey = key.toLowerCase().replace(/[^a-z0-9]/g, '_');
-            if (qDef.patterns.some(p => lowerKey.includes(p.replace(/[^a-z0-9]/g, '_')))) {
+            const cleanPattern = qDef.patterns[0].replace(/[^a-z0-9]/g, '_');
+            if (lowerKey.includes(cleanPattern)) {
               answer = formData.questionnaire[key];
               console.log(`PDF: ${qDef.text} = ${answer} (key: ${key})`);
               break;
             }
           }
           
-          // Fondo alternado
-          if (idx % 2 === 1) {
-            doc.fillColor('#f8f8f8');
-            doc.rect(tableX, y, tableWidth, rowHeight).fill();
-          }
-          
-          // Pregunta
-          doc.fillColor('#000000').fontSize(8).font('Helvetica');
-          doc.text(qDef.text, tableX + 5, y + 6, { width: questionColWidth - 10 });
-          
-          // Celda de respuesta con fondo de color
-          const answerX = tableX + questionColWidth;
-          const answerCenterX = answerX + (answerColWidth / 2);
-          
-          if (answer === 'Yes') {
-            // Fondo verde claro con texto
-            doc.fillColor('#dcfce7').rect(answerX + 2, y + 2, answerColWidth - 4, rowHeight - 4).fill();
-            doc.fillColor('#16a34a').fontSize(10).font('Helvetica-Bold');
-            doc.text('YES / SÍ', answerCenterX, y + 6, { width: answerColWidth - 10, align: 'center' });
-          } else if (answer === 'No') {
-            // Fondo rojo claro con texto
-            doc.fillColor('#fee2e2').rect(answerX + 2, y + 2, answerColWidth - 4, rowHeight - 4).fill();
-            doc.fillColor('#dc2626').fontSize(10).font('Helvetica-Bold');
-            doc.text('NO', answerCenterX, y + 6, { width: answerColWidth - 10, align: 'center' });
-          } else {
-            // Fondo gris para N/A
-            doc.fillColor('#f0f0f0').rect(answerX + 2, y + 2, answerColWidth - 4, rowHeight - 4).fill();
-            doc.fillColor('#999999').fontSize(9).font('Helvetica');
-            doc.text('N/A', answerCenterX, y + 7, { width: answerColWidth - 10, align: 'center' });
-          }
-          
-          // Línea inferior
-          doc.strokeColor('#e0e0e0').lineWidth(0.5);
-          doc.moveTo(tableX, y + rowHeight).lineTo(tableX + tableWidth, y + rowHeight).stroke();
-          
-          y += rowHeight;
+          tableData.rows.push({
+            question: qDef.text,
+            answer: answer === 'Yes' ? 'YES / SÍ' : answer === 'No' ? 'NO' : 'N/A'
+          });
         });
         
-        doc.y = y + 5;
+        // Dibujar tabla
+        doc.table(tableData, {
+          columnsSize: [385, 130],
+          x: 40,
+          y: doc.y,
+          width: 515,
+          padding: 5,
+          headerBackgroundColor: '#197547',
+          headerTextColor: '#ffffff'
+        });
       }
 
       // OTHER INCOME & PAYMENT METHOD
