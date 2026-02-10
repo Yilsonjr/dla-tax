@@ -142,7 +142,7 @@ async function generatePDF(formData) {
         let y = doc.y;
         
         // Encabezados de tabla
-        doc.setFillColor(25, 118, 75); // Verde corporativo
+        doc.fillColor(25, 118, 75); // Verde corporativo
         doc.rect(tableX, y, tableWidth, rowHeight, 'F');
         doc.fillColor('#ffffff').fontSize(8).font('Helvetica-Bold');
         doc.text('TOPIC / QUESTION (TEMA / PREGUNTA)', tableX + 5, y + 5);
@@ -197,7 +197,7 @@ async function generatePDF(formData) {
           
           // Fondo alternado
           if (idx % 2 === 1) {
-            doc.setFillColor(250, 250, 250);
+            doc.fillColor(250, 250, 250);
             doc.rect(tableX, y, tableWidth, rowHeight, 'F');
           }
           
