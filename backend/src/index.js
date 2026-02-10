@@ -1,9 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { generatePDF } = require('./pdf');
 const { uploadToCloudinary } = require('./cloudinary');
-const { validateFormData } = require('./validators');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -20,47 +18,38 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Health check
 app.get('/health', (req, res) => {
   res.json({ ok: true, message: 'Backend DLA Tax activo' });
 });
 
-// Endpoint principal para recibir formularios
+// Endpoint principal para recibir formularios (PDF ya generado desde frontend)
 app.post('/api/forms', async (req, res) => {
   try {
     console.log('=== INICIO PROCESAMIENTO FORMULARIO ===');
-    const formData = req.body;
+    const { pdf, data } = req.body;
 
-    // DEBUG: Verificar formato del cuestionario
-    if (formData.questionnaire) {
-      console.log('Keys del cuestionario:', Object.keys(formData.questionnaire));
-      console.log('Valores del cuestionario:', JSON.stringify(formData.questionnaire, null, 2));
-    }
-
-    // Validar datos
-    const validation = validateFormData(formData);
-    if (!validation.valid) {
-      console.error('Validación fallida:', validation.errors);
+    if (!pdf) {
       return res.status(400).json({
         success: false,
-        message: 'Datos inválidos: ' + validation.errors.join(', ')
+        message: 'PDF es requerido'
       });
     }
 
-    console.log('Datos validados correctamente');
-    console.log('Cliente:', formData.tp_name);
+    console.log('PDF recibido, guardando en Cloudinary...');
 
-    // Generar PDF
-    console.log('Generando PDF...');
-    const pdfBuffer = await generatePDF(formData);
-    console.log('PDF generado exitosamente');
+    // Extraer datos básicos
+    const taxpayerName = data?.taxpayer_name || 'Unknown';
+    const submissionDate = data?.submission_date || new Date().toISOString().split('T')[0];
+
+    // Convertir base64 a buffer
+    const pdfBuffer = Buffer.from(pdf.split(',')[1], 'base64');
 
     // Subir a Cloudinary
-    console.log('Subiendo a Cloudinary...');
-    const cloudinaryResult = await uploadToCloudinary(pdfBuffer, formData.tp_name);
+    const cloudinaryResult = await uploadToCloudinary(pdfBuffer, taxpayerName);
     console.log('Archivo guardado en Cloudinary:', cloudinaryResult.fileName);
 
     console.log('=== FIN PROCESAMIENTO EXITOSO ===');
@@ -68,16 +57,13 @@ app.post('/api/forms', async (req, res) => {
     res.json({
       success: true,
       message: 'Formulario guardado exitosamente en Cloudinary',
-      fileName: cloudinaryResult.fileName,
-      fileUrl: cloudinaryResult.fileUrl,
-      fileId: cloudinaryResult.fileId,
-      folderUrl: cloudinaryResult.folderUrl
+      pdf_url: cloudinaryResult.fileUrl,
+      fileName: cloudinaryResult.fileName
     });
 
   } catch (error) {
     console.error('=== ERROR EN PROCESAMIENTO ===');
     console.error('Error:', error.message);
-    console.error('Stack:', error.stack);
 
     res.status(500).json({
       success: false,
