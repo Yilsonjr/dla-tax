@@ -34,6 +34,12 @@ app.post('/api/forms', async (req, res) => {
     console.log('=== INICIO PROCESAMIENTO FORMULARIO ===');
     const formData = req.body;
 
+    // DEBUG: Verificar formato del cuestionario
+    if (formData.questionnaire) {
+      console.log('Keys del cuestionario:', Object.keys(formData.questionnaire));
+      console.log('Valores del cuestionario:', JSON.stringify(formData.questionnaire, null, 2));
+    }
+
     // Validar datos
     const validation = validateFormData(formData);
     if (!validation.valid) {
