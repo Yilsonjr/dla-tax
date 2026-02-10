@@ -130,106 +130,86 @@ async function generatePDF(formData) {
         doc.moveDown(0.3);
       }
 
-      // QUESTIONNAIRE - Tabla profesional con tres columnas: Pregunta | Sí | No
+      // QUESTIONNAIRE - Diseño profesional con lista vertical
       addSection('INFORMATION QUESTIONNAIRE');
       if (formData.questionnaire) {
-        const entries = Object.entries(formData.questionnaire);
+        // Lista de preguntas con formato bilingüe correcto
+        const questions = [
+          { key: 'unemployment', text: 'Unemployment / Desempleo' },
+          { key: 'mortgage', text: 'Mortgage (Form 1098) / Hipoteca (Formulario 1098)' },
+          { key: 'public_assistance', text: 'Public Assistance / Asistencia Pública' },
+          { key: 'real_estate_taxes', text: 'Real Estate Taxes / Impuestos a la Propiedad' },
+          { key: 'food_stamps', text: 'Food Stamps / Cupones de Alimentos' },
+          { key: 'medical_expenses', text: 'Medical Expenses / Gastos Médicos' },
+          { key: 'social_security_or_ssi', text: 'Social Security or SSI / Seguro Social o SSI' },
+          { key: 'medical_insurance', text: 'Medical Insurance / Seguro Médico' },
+          { key: 'section_8', text: 'Section 8 (Rental Assistance) / Sección 8 (Ayuda para la Renta)' },
+          { key: 'theft_loss', text: 'Theft Loss / Pérdida por Robo' },
+          { key: 'child_support', text: 'Child Support / Manutención de Hijos' },
+          { key: 'donations', text: 'Donations / Donaciones' },
+          { key: 'gambling_income', text: 'Gambling Income / Ingresos por Lotería o Juegos de Azar' },
+          { key: 'gambling_losses', text: 'Gambling Losses / Pérdidas por Lotería o Juegos de Azar' },
+          { key: 'interest_income', text: 'Interest Income / Ingresos por Intereses' },
+          { key: 'car_loan', text: 'Car Loan / Préstamo de Vehículo' },
+          { key: 'pensions_or_ira', text: 'Pensions or IRA / Pensiones o IRA' }
+        ];
         
-        // Configuración de la tabla
-        const colQuestionX = 40;
-        const colYesX = 420;
-        const colNoX = 480;
-        const questionWidth = 370;
-        const checkWidth = 50;
-        const rowHeight = 22;
-        let startY = doc.y;
+        let yPos = doc.y;
         
-        // Dibujar encabezados de tabla bilingües
-        doc.fontSize(7).fillColor(titleColor).font('Helvetica-Bold');
-        doc.text('Topic / Question (Tema / Pregunta)', colQuestionX, startY);
-        doc.text('YES / SÍ', colYesX, startY, { width: checkWidth, align: 'center' });
-        doc.text('NO', colNoX, startY, { width: checkWidth, align: 'center' });
-        
-        // Línea bajo encabezados
-        startY += 16;
-        doc.strokeColor(titleColor).lineWidth(1);
-        doc.moveTo(colQuestionX, startY - 4).lineTo(530, startY - 4).stroke();
-        
-        // Mapeo completo de preguntas con texto original
-        const questionMap = {
-          'unemployment_desempleo': 'Unemployment / Desempleo',
-          'mortgage_form_1098_hipoteca_formulario_1098': 'Mortgage (Form 1098) / Hipoteca (Formulario 1098)',
-          'public_assistance_asistencia_publica': 'Public Assistance / Asistencia Pública',
-          'real_estate_taxes_impuestos_a_la_propiedad': 'Real Estate Taxes / Impuestos a la Propiedad',
-          'food_stamps_cupones_de_alimentos': 'Food Stamps / Cupones de Alimentos',
-          'medical_expenses_gastos_medicos': 'Medical Expenses / Gastos Médicos',
-          'social_security_or_ssi_seguro_social_o_ssi': 'Social Security or SSI / Seguro Social o SSI',
-          'medical_insurance_seguro_medico': 'Medical Insurance / Seguro Médico',
-          'section_8_rental_assistance_seccion_8_ayuda_para_la_renta': 'Section 8 (Rental Assistance) / Sección 8 (Ayuda para la Renta)',
-          'theft_loss_perdida_por_robo': 'Theft Loss / Pérdida por Robo',
-          'child_support_manutencion_de_hijos': 'Child Support / Manutención de Hijos',
-          'donations_donaciones': 'Donations / Donaciones',
-          'gambling_income_ingresos_por_loteria_o_juegos_de_azar': 'Gambling Income / Ingresos por Lotería o Juegos de Azar',
-          'gambling_losses_perdidas_por_loteria_o_juegos_de_azar': 'Gambling Losses / Pérdidas por Lotería o Juegos de Azar',
-          'interest_income_ingresos_por_intereses': 'Interest Income / Ingresos por Intereses',
-          'car_loan_prestamo_de_vehiculo': 'Car Loan / Préstamo de Vehículo',
-          'pensions_or_ira_pensiones_o_ira': 'Pensions or IRA / Pensiones o IRA'
-        };
-        
-        // Función para obtener texto de pregunta
-        const getQuestionText = (key) => {
-          return questionMap[key] || key.replace(/^q_/i, '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        };
-        
-        // Dibujar cada fila de la tabla
-        entries.forEach(([key, value], index) => {
-          let currentY = startY + (index * rowHeight);
+        // Dibujar cada pregunta
+        questions.forEach((q, index) => {
+          // Buscar el valor en questionnaire (puede tener diferentes formatos de clave)
+          let answer = '';
+          const qKeys = Object.keys(formData.questionnaire);
+          const matchKey = qKeys.find(k => k.includes(q.key) || k.includes(q.key.split('_')[0]));
+          if (matchKey) {
+            answer = formData.questionnaire[matchKey];
+          }
           
           // Verificar si necesitamos nueva página
-          if (currentY > 720) {
+          if (yPos > 700) {
             doc.addPage();
-            startY = 50;
-            currentY = startY;
+            yPos = 50;
           }
           
-          // Dibujar línea de separación sutil
-          if (index > 0) {
-            doc.strokeColor('#e0e0e0').lineWidth(0.5);
-            doc.moveTo(colQuestionX, currentY - 4).lineTo(530, currentY - 4).stroke();
+          // Fondo sutil para cada fila
+          if (index % 2 === 0) {
+            doc.rect(35, yPos - 2, 525, 20).fill('#fafafa');
           }
           
-          // Pregunta (texto completo sin truncar)
-          const questionText = getQuestionText(key);
-          doc.fontSize(8).fillColor(textColor).font('Helvetica');
-          doc.text(questionText, colQuestionX, currentY, { width: questionWidth, lineGap: 1 });
+          // Dibujar pregunta
+          doc.fontSize(9).fillColor(textColor).font('Helvetica');
+          doc.text(q.text, 40, yPos);
           
-          // Dibujar círculos para selección - centrados en la fila
-          const circleY = currentY + 8; // Centrado vertical en la fila
-          const circleRadius = 5;
+          // Cajas de selección
+          const boxY = yPos - 1;
           
-          // Círculo para YES (centro en colYesX + 25 = 445)
-          doc.strokeColor('#333333').lineWidth(0.5);
-          doc.circle(colYesX + 25, circleY, circleRadius).stroke();
+          // YES / SÍ
+          doc.rect(430, boxY, 15, 15).stroke('#666');
+          doc.fontSize(7).fillColor('#666').font('Helvetica');
+          doc.text('YES / SÍ', 450, boxY + 3);
           
-          // Círculo para NO (centro en colNoX + 25 = 505)
-          doc.circle(colNoX + 25, circleY, circleRadius).stroke();
+          // NO
+          doc.rect(490, boxY, 15, 15).stroke('#666');
+          doc.text('NO', 510, boxY + 3);
           
-          // Marcar según respuesta - DENTRO del círculo
-          doc.fontSize(9).font('Helvetica-Bold');
-          if (value === 'Yes') {
-            doc.fillColor('#197547'); // Verde - ✓ dentro del círculo
-            doc.text('✓', colYesX + 25 - 5, circleY - 5, { width: 10, align: 'center' });
-          } else if (value === 'No') {
-            doc.fillColor('#cc0000'); // Rojo - ✓ dentro del círculo
-            doc.text('✓', colNoX + 25 - 5, circleY - 5, { width: 10, align: 'center' });
+          // Marcar respuesta seleccionada
+          if (answer === 'Yes') {
+            doc.fillColor('#16a34a').font('Helvetica-Bold').fontSize(12);
+            doc.text('✓', 432, boxY - 1);
+          } else if (answer === 'No') {
+            doc.fillColor('#dc2626').font('Helvetica-Bold').fontSize(12);
+            doc.text('✓', 492, boxY - 1);
           }
           
-          // Actualizar doc.y después de dibujar la fila
-          doc.y = currentY + rowHeight;
+          // Línea divisoria
+          doc.strokeColor('#e5e5e5').lineWidth(0.5);
+          doc.moveTo(35, yPos + 18).lineTo(560, yPos + 18).stroke();
+          
+          yPos += 20;
         });
         
-        // Actualizar posición Y después de la tabla
-        doc.y = startY + (entries.length * rowHeight) + 20;
+        doc.y = yPos + 5;
       }
       // OTHER INCOME & PAYMENT METHOD
       addSection('OTHER INFORMATION');
