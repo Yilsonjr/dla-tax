@@ -183,45 +183,49 @@ async function generatePDF(formData) {
         
         // Dibujar cada fila de la tabla
         entries.forEach(([key, value], index) => {
-          const y = startY + (index * rowHeight);
+          let currentY = startY + (index * rowHeight);
           
           // Verificar si necesitamos nueva página
-          if (y > 720) {
+          if (currentY > 720) {
             doc.addPage();
             startY = 50;
+            currentY = startY;
           }
           
           // Dibujar línea de separación sutil
           if (index > 0) {
             doc.strokeColor('#e0e0e0').lineWidth(0.5);
-            doc.moveTo(colQuestionX, y - 4).lineTo(530, y - 4).stroke();
+            doc.moveTo(colQuestionX, currentY - 4).lineTo(530, currentY - 4).stroke();
           }
           
           // Pregunta (texto completo sin truncar)
           const questionText = getQuestionText(key);
           doc.fontSize(8).fillColor(textColor).font('Helvetica');
-          doc.text(questionText, colQuestionX, y, { width: questionWidth, lineGap: 1 });
+          doc.text(questionText, colQuestionX, currentY, { width: questionWidth, lineGap: 1 });
           
-          // Dibujar círculos para selección
-          const circleRadius = 6;
-          const circleY = y + 3;
+          // Dibujar círculos para selección - centrados en la fila
+          const circleY = currentY + 8; // Centrado vertical en la fila
+          const circleRadius = 5;
           
-          // Círculo para YES
+          // Círculo para YES (centro en colYesX + 25 = 445)
           doc.strokeColor('#333333').lineWidth(0.5);
           doc.circle(colYesX + 25, circleY, circleRadius).stroke();
           
-          // Círculo para NO
+          // Círculo para NO (centro en colNoX + 25 = 505)
           doc.circle(colNoX + 25, circleY, circleRadius).stroke();
           
-          // Marcar según respuesta
-          doc.fontSize(8).font('Helvetica-Bold');
+          // Marcar según respuesta - DENTRO del círculo
+          doc.fontSize(9).font('Helvetica-Bold');
           if (value === 'Yes') {
-            doc.fillColor('#197547'); // Verde
-            doc.text('Yes/Sí', colYesX + 5, circleY - 3, { width: checkWidth, align: 'center' });
+            doc.fillColor('#197547'); // Verde - ✓ dentro del círculo
+            doc.text('✓', colYesX + 25 - 5, circleY - 5, { width: 10, align: 'center' });
           } else if (value === 'No') {
-            doc.fillColor('#cc0000'); // Rojo
-            doc.text('No', colNoX + 5, circleY - 3, { width: checkWidth, align: 'center' });
+            doc.fillColor('#cc0000'); // Rojo - ✓ dentro del círculo
+            doc.text('✓', colNoX + 25 - 5, circleY - 5, { width: 10, align: 'center' });
           }
+          
+          // Actualizar doc.y después de dibujar la fila
+          doc.y = currentY + rowHeight;
         });
         
         // Actualizar posición Y después de la tabla

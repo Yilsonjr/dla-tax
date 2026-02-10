@@ -520,25 +520,43 @@ const questionData = [
                 return; // Detener el envío
             }
             
-            document.getElementById('loader').classList.remove('hidden');
+            // Mostrar loader con mensajes de progreso
+            const loader = document.getElementById('loader');
+            const loaderMessage = document.getElementById('loader-message');
+            loader.classList.remove('hidden');
+            
+            // Función para actualizar mensaje
+            const updateMessage = (msg, submsg) => {
+                loaderMessage.innerHTML = msg + (submsg ? `<br><span class="text-xs text-slate-400">${submsg}</span>` : '');
+            };
+            
             try {
+                // Mensajes de progreso
+                updateMessage('Validating information...', 'Please wait');
+                
+                await new Promise(r => setTimeout(r, 500)); // Pequeña pausa para mostrar validación
+                
+                updateMessage('Generating PDF...', 'Creating your tax document');
+                
                 // Recopilar datos del formulario
                 const formData = collectFormData();
                 
-                // Enviar a Google Drive primero
+                updateMessage('Sending to server...', 'Uploading your information');
+                
+                // Enviar al servidor
                 const driveSuccess = await sendToGoogleDrive(formData);
                 
-                // Solo generar PDF localmente si el envío al backend fue exitoso
                 if (driveSuccess) {
+                    updateMessage('Saving document...', 'Finalizing your submission');
                     generatePDF();
                 }
                 
-                document.getElementById('loader').classList.add('hidden');
+                loader.classList.add('hidden');
 
                 await Swal.fire({
                     icon: 'success',
-                    title: 'Enviado',
-                    text: 'Tu formulario fue enviado exitosamente y guardado.',
+                    title: '¡Formulario Enviado!',
+                    text: 'Tu formulario fue procesado exitosamente. El documento ha sido guardado.',
                     confirmButtonText: 'Aceptar'
                 });
 
