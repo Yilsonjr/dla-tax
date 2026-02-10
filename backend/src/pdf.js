@@ -23,7 +23,7 @@ PDFDocument.prototype.table = function(tableData, options) {
 
     const startY = y || doc.y;
     const tableWidth = width || (515 - x);
-    const rowHeight = 18;
+    const rowHeight = 26;
     const headerHeight = 22;
     
     // Calcular anchos de columnas si no se especifican
@@ -41,7 +41,7 @@ PDFDocument.prototype.table = function(tableData, options) {
     headers.forEach((header, i) => {
       const colX = x + finalColSizes.slice(0, i).reduce((a, b) => a + b, 0) + padding;
       doc.fillColor(headerTextColor).fontSize(8).font('Helvetica-Bold');
-      doc.text(header.label || '', colX, currentY + 7, {
+      doc.text(header.label || '', colX, currentY + 8, {
         width: finalColSizes[i] - (padding * 2),
         align: header.align || 'left'
       });
@@ -63,7 +63,7 @@ PDFDocument.prototype.table = function(tableData, options) {
         // Color especial para columna ANSWER
         if (header.property === 'answer') {
           const answer = row[header.property] || '';
-          if (answer.includes('YES')) {
+          if (answer.startsWith('YES')){
             doc.fillColor('#dcfce7').rect(x + finalColSizes.slice(0, colIndex).reduce((a, b) => a + b, 0), currentY, finalColSizes[colIndex], rowHeight).fill();
             doc.fillColor('#16a34a').fontSize(9).font('Helvetica-Bold');
           } else if (answer === 'NO') {
@@ -76,9 +76,9 @@ PDFDocument.prototype.table = function(tableData, options) {
           doc.fillColor('#000000').fontSize(8).font('Helvetica');
         }
         
-        doc.text(String(row[header.property] || ''), colX, currentY + 5, {
+        doc.text(String(row[header.property] || ''), colX, currentY + 8, {
           width: cellWidth,
-          align: header.align || 'left'
+          align: header.align || 'center'
         });
       });
 
@@ -254,8 +254,8 @@ async function generatePDF(formData) {
         // Preparar datos de la tabla
         const tableData = {
           headers: [
-            { label: 'TOPIC / QUESTION (TEMA / PREGUNTA)', property: 'question', width: 385 },
-            { label: 'ANSWER / RESPUESTA', property: 'answer', width: 130, align: 'center' }
+            { label: 'TOPIC / QUESTION (TEMA / PREGUNTA)', property: 'question', width: 350 },
+            { label: 'ANSWER / RESPUESTA', property: 'answer', width: 165, align: 'center' }
           ],
           rows: []
         };
@@ -281,7 +281,7 @@ async function generatePDF(formData) {
         
         // Dibujar tabla
         doc.table(tableData, {
-          columnsSize: [385, 130],
+          columnsSize: [350, 165],
           x: 40,
           y: doc.y,
           width: 515,
