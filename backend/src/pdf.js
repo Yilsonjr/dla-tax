@@ -202,7 +202,7 @@ async function generatePDF(formData) {
           }
           
           // Pregunta
-          doc.setFillColor(0, 0, 0).fontSize(8).font('Helvetica');
+          doc.fillColor(0, 0, 0).fontSize(8).font('Helvetica');
           doc.text(qDef.text, tableX + 3, y + 4, { width: questionColWidth - 5 });
           
           // Caja YES
