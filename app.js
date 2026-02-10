@@ -123,6 +123,18 @@ const questionData = [
             c.getContext('2d').clearRect(0,0,c.width,c.height);
         }
 
+        // Función para verificar si el canvas de firma tiene contenido
+        function hasSignature(id) {
+            const canvas = document.getElementById(id);
+            const ctx = canvas.getContext('2d');
+            const pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            // Verificar si hay algún pixel que no sea completamente transparente
+            for (let i = 3; i < pixelData.length; i += 4) {
+                if (pixelData[i] > 0) return true;
+            }
+            return false;
+        }
+
         initSig('sig_tp');
         checkSpouseLogic();
 
@@ -495,6 +507,19 @@ const questionData = [
         document.getElementById('fullTaxForm').onsubmit = async (e) => {
             e.preventDefault();
             const form = e.currentTarget;
+            
+            // VALIDACIÓN: Requerir firma del contribuyente (TAXPAYER SIGNATURE)
+            if (!hasSignature('sig_tp')) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Taxpayer Signature',
+                    text: `Por favor, firme el formulario en "Taxpayer Signature" antes de enviar.
+                    Please sign the form in "Taxpayer Signature" before submitting.`,
+                    confirmButtonText: 'Accept'
+                });
+                return; // Detener el envío
+            }
+            
             document.getElementById('loader').classList.remove('hidden');
             try {
                 // Recopilar datos del formulario
@@ -513,7 +538,7 @@ const questionData = [
                 await Swal.fire({
                     icon: 'success',
                     title: 'Enviado',
-                    text: 'Tu formulario fue enviado exitosamente y guardado en Google Drive.',
+                    text: 'Tu formulario fue enviado exitosamente y guardado.',
                     confirmButtonText: 'Aceptar'
                 });
 
