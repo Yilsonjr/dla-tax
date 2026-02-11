@@ -303,7 +303,7 @@ const questionData = [
         function generatePDF(formData) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
-            let yPos = 20;
+            let yPos = 16;
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
             const margin = 15;
