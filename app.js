@@ -236,6 +236,36 @@ const questionData = [
             return data;
         }
 
+        // Función para resetear el formulario después de envío exitoso
+        function resetForm() {
+            const form = document.getElementById('fullTaxForm');
+            form.reset();
+            
+            // Limpiar firmas
+            clearSig('sig_tp');
+            clearSig('sig_sp');
+            
+            // Limpiar dependientes
+            document.getElementById('deps_container').innerHTML = '';
+            
+            // Ocultar secciones condicionadas
+            document.getElementById('spouse_section').classList.add('hidden');
+            document.getElementById('sp_sig_card').classList.add('hidden');
+            document.getElementById('deps_section').classList.add('hidden');
+            document.getElementById('cc_section').classList.add('hidden');
+            document.getElementById('student_extra_info').classList.add('hidden');
+            
+            // Limpiar cuestionario
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.checked = false;
+            });
+            
+            // Recargar página después de un momento para limpiar todo completamente
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        }
+
         // URL del backend desplegado en Render
         const BACKEND_URL = 'https://dla-tax.onrender.com/api/forms';
         
@@ -650,14 +680,23 @@ const questionData = [
                     confirmButtonColor: '#197547'
                 });
                 
+                // Resetear formulario
+                resetForm();
+                
                 // Mostrar enlace de descarga
                 if (result.pdf_url) {
                     const downloadLink = document.createElement('a');
                     downloadLink.href = result.pdf_url;
                     downloadLink.download = `DLA_Tax_${formData.tp_name.replace(/\s+/g, '_')}_2026.pdf`;
-                    downloadLink.textContent = 'Download PDF';
-                    downloadLink.className = 'block mt-4 text-green-600 font-bold';
-                    document.querySelector('.bg-green-900').appendChild(downloadLink);
+                    downloadLink.textContent = '📄 Download PDF';
+                    downloadLink.target = '_blank';
+                    downloadLink.className = 'block mt-4 text-green-600 font-bold text-center';
+                    
+                    // Crear contenedor para el enlace
+                    const linkContainer = document.createElement('div');
+                    linkContainer.className = 'bg-green-50 p-4 rounded-lg mt-4';
+                    linkContainer.appendChild(downloadLink);
+                    document.querySelector('.bg-green-900').appendChild(linkContainer);
                 }
                 
             } catch (error) {
