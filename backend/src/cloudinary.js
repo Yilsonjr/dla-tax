@@ -35,7 +35,7 @@ async function uploadToCloudinary(pdfBuffer, clientName) {
     const result = await cloudinary.uploader.upload(dataURI, {
       public_id: fileName,
       folder: 'dla-tax-documents',
-      resource_type: 'raw', // Importante para archivos no-imagen como PDFs
+      resource_type: 'auto', // Detecta automáticamente el tipo de archivo
       format: 'pdf'
     });
 
