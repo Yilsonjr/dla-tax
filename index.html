@@ -66,7 +66,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="md:col-span-2">
                         <label class="label-title">Full Name (Nombre Completo)</label>
-                        <input type="text" id="tp_name" placeholder="As on SSN Card" maxlength="9" inputmode="numeric" pattern="[0-9]*"required>
+                        <input type="text" id="tp_name" placeholder="As on SSN Card" required>
                     </div>
                     <div>
                         <label class="label-title">Date of Birth / Fecha Nac.</label>
@@ -157,9 +157,9 @@
                             <input type="text" id="sp_ocu">
                         </div>
                         <div>
-                            <label class="label-title">Cell / Celular</label>
-                            <input type="tel" id="sp_cell">
-                        </div>
+                        <label class="label-title">Phone Number / Teléfono</label>
+                        <input type="text" id="sp_cell" required>
+                    </div>
                         <div>
                             <label class="label-title">Email</label>
                             <input type="email" id="sp_email">
@@ -177,6 +177,7 @@
                             <div><label class="label-title">ID Number</label><input type="text" id="sp_id_num" inputmode="numeric" pattern="[0-9]*"></div>
                             <div><label class="label-title">Issue State</label><input type="text" id="sp_id_state"></div>
                             <div><label class="label-title">Exp. Date</label><input type="date" id="sp_id_exp"></div>
+                            
                         </div>
                     </div>
                 </div>
