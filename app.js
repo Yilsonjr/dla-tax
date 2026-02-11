@@ -20,7 +20,6 @@ const questionData = [
     "Pensions or IRA / Pensiones o IRA"
 ];
 
-
         const mContainer = document.getElementById('matrix_container');
         questionData.forEach(q => {
             const id = q.toLowerCase().replace(/[^a-z0-9]/g, '_');
@@ -390,6 +389,11 @@ const questionData = [
             doc.setTextColor(50, 50, 50);
             doc.text('TAXPAYER INTAKE FORM 2026', pageWidth / 2, yPos, { align: 'center' });
             yPos += 12;
+
+            doc.setFontSize(10);
+            doc.setTextColor(50, 50, 50);
+            doc.text('Prepared by Sergio De Los Angeles', pageWidth / 2, yPos, { align: 'center' });
+            yPos += 14;
             
             addSeparator();
             
