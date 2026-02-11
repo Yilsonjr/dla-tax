@@ -325,7 +325,7 @@ const questionData = [
             const checkPageBreak = (space = 15) => {
                 if (yPos + space > pageHeight - 15) {
                     doc.addPage();
-                    yPos = 20;
+                    yPos = 18;
                 }
             };
 
@@ -516,12 +516,12 @@ const questionData = [
                     fontSize: 8
                 },
                 columnStyles: {
-                    0: { cellWidth: 140, minCellHeight: 8 },  // Pregunta: 140mm con wrap
+                    0: { cellWidth: 140, minCellHeight: 7 },  // Pregunta: 140mm con wrap
                     1: { cellWidth: 45, halign: 'center' }  // Respuesta: 45mm
                 },
                 styles: {
                     fontSize: 8,
-                    cellPadding: 4,
+                    cellPadding: 3,
                     lineColor: [200, 200, 200],
                     lineWidth: 0.1,
                     overflow: 'linebreak',
