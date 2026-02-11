@@ -123,16 +123,31 @@ const questionData = [
             c.getContext('2d').clearRect(0,0,c.width,c.height);
         }
 
-        // Función para verificar si el canvas de firma tiene contenido
-        function hasSignature(id) {
+        // Función mejorada para verificar si el canvas de firma tiene contenido real
+        function hasRealSignature(id) {
             const canvas = document.getElementById(id);
+            if (!canvas) return false;
+            
             const ctx = canvas.getContext('2d');
-            const pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-            // Verificar si hay algún pixel que no sea completamente transparente
-            for (let i = 3; i < pixelData.length; i += 4) {
-                if (pixelData[i] > 0) return true;
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Obtener datos de píxeles
+            const imageData = ctx.getImageData(0, 0, width, height);
+            const data = imageData.data;
+            
+            // Contar píxeles no transparentes
+            let nonTransparentPixels = 0;
+            const totalPixels = data.length / 4;
+            
+            for (let i = 3; i < data.length; i += 4) {
+                if (data[i] > 50) { // Umbral de opacidad
+                    nonTransparentPixels++;
+                }
             }
-            return false;
+            
+            // Si hay más del 1% de píxeles, hay firma real
+            return (nonTransparentPixels / totalPixels) > 0.01;
         }
 
         initSig('sig_tp');
@@ -572,47 +587,38 @@ const questionData = [
             
             // SIGNATURES
             addSectionTitle('SIGNATURES');
-            const sigTp = document.getElementById('sig_tp');
-            const sigSp = document.getElementById('sig_sp');
             
-            if (sigTp) {
-                const sigTpData = sigTp.toDataURL('image/png');
-                // Verificar si hay contenido real
-                const hasTpSig = !sigTpData.includes('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
+            // Taxpayer signature
+            if (hasRealSignature('sig_tp')) {
+                checkPageBreak(40);
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'bold');
+                doc.setTextColor(40, 40, 40);
+                doc.text('Taxpayer Signature:', margin, yPos);
+                yPos += 8;
                 
-                if (hasTpSig) {
-                    checkPageBreak(40);
-                    doc.setFontSize(10);
-                    doc.setFont(undefined, 'bold');
-                    doc.setTextColor(40, 40, 40);
-                    doc.text('Taxpayer Signature:', margin, yPos);
-                    yPos += 8;
-                    
-                    doc.addImage(sigTpData, 'PNG', margin, yPos, 50, 20);
-                    yPos += 22;
-                    
-                    addField('Signature Date', formData.sig_tp_date);
-                    yPos += 6;
-                }
+                const sigTpData = document.getElementById('sig_tp').toDataURL('image/png');
+                doc.addImage(sigTpData, 'PNG', margin, yPos, 50, 20);
+                yPos += 22;
+                
+                addField('Signature Date', formData.sig_tp_date);
+                yPos += 6;
             }
-
-            if (hasSpouse && sigSp) {
-                const sigSpData = sigSp.toDataURL('image/png');
-                const hasSpSig = !sigSpData.includes('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
+            
+            // Spouse signature (only if has spouse)
+            if (formData.has_spouse === 'Yes' && hasRealSignature('sig_sp')) {
+                checkPageBreak(40);
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'bold');
+                doc.setTextColor(40, 40, 40);
+                doc.text('Spouse Signature:', margin, yPos);
+                yPos += 8;
                 
-                if (hasSpSig) {
-                    checkPageBreak(40);
-                    doc.setFontSize(10);
-                    doc.setFont(undefined, 'bold');
-                    doc.setTextColor(40, 40, 40);
-                    doc.text('Spouse Signature:', margin, yPos);
-                    yPos += 8;
-                    
-                    doc.addImage(sigSpData, 'PNG', margin, yPos, 50, 20);
-                    yPos += 22;
-                    
-                    addField('Spouse Signature Date', formData.sig_sp_date);
-                }
+                const sigSpData = document.getElementById('sig_sp').toDataURL('image/png');
+                doc.addImage(sigSpData, 'PNG', margin, yPos, 50, 20);
+                yPos += 22;
+                
+                addField('Spouse Signature Date', formData.sig_sp_date);
             }
 
             // FOOTER - Simple y limpio
@@ -652,17 +658,14 @@ const questionData = [
                 
                 // Validar firmas
                 const tpSig = document.getElementById('sig_tp');
-                const hasTpSig = tpSig && !tpSig.toDataURL('image/png').includes('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
-                
-                if (!hasTpSig) {
-                    throw new Error('Taxpayer signature is required');
+                if (!hasRealSignature('sig_tp')) {
+                    throw new Error('Taxpayer signature is REQUIRED. Please sign before submitting.');
                 }
                 
+                // Validar firma del cónyuge SI tiene cónyuge
                 if (formData.has_spouse === 'Yes') {
-                    const spSig = document.getElementById('sig_sp');
-                    const hasSpSig = spSig && !spSig.toDataURL('image/png').includes('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
-                    if (!hasSpSig) {
-                        throw new Error('Spouse signature is required');
+                    if (!hasRealSignature('sig_sp')) {
+                        throw new Error('Spouse signature is REQUIRED because you selected "Married". Please sign.');
                     }
                 }
                 
