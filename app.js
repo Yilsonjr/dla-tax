@@ -172,6 +172,7 @@ const questionData = [
                 sp_id_type: document.getElementById('sp_id_type').value,
                 sp_id_num: document.getElementById('sp_id_num').value,
                 sp_id_state: document.getElementById('sp_id_state').value,
+                sp_id_issue: document.getElementById('sp_id_issue').value,
                 sp_id_exp: document.getElementById('sp_id_exp').value,
                 
                 // Address
@@ -309,8 +310,8 @@ const questionData = [
             const margin = 15;
             const labelColumn = margin;
             const valueColumn = margin + 60;
-            const lineHeight = 8;
-            const sectionSpacing = 10;
+            const lineHeight = 6;
+            const sectionSpacing = 6;
 
             // Colores
             const titleColor = '#197547';
@@ -331,10 +332,10 @@ const questionData = [
 
             // Agregar línea separadora
             const addSeparator = () => {
-                checkPageBreak(8);
+                checkPageBreak(5);
                 doc.setDrawColor(200, 200, 200);
                 doc.line(margin, yPos, pageWidth - margin, yPos);
-                yPos += 8;
+                yPos += 5;
             };
 
             // Agregar título de sección
@@ -376,17 +377,16 @@ const questionData = [
             yPos += 12;
             
             addSeparator();
-            yPos += 2;
-
+            
             // INITIAL SETUP
             addSectionTitle('INITIAL SETUP');
             addField('Preparation Date', formData.form_date);
             addField('Prior Client', formData.prior_client);
             addField('Referral', formData.referral);
             yPos += sectionSpacing;
+            
             addSeparator();
-            yPos += 2;
-
+            
             // TAXPAYER INFORMATION
             addSectionTitle('01. TAXPAYER INFORMATION');
             addField('Full Name', formData.tp_name);
@@ -404,9 +404,9 @@ const questionData = [
             addField('Student', formData.tp_student);
             if (formData.tp_student_inst) addField('Student Institution', formData.tp_student_inst);
             yPos += sectionSpacing;
+            
             addSeparator();
-            yPos += 2;
-
+            
             // SPOUSE INFORMATION
             const hasSpouse = formData.has_spouse === 'Yes';
             if (hasSpouse) {
@@ -420,6 +420,7 @@ const questionData = [
                 addField('Spouse ID Type', formData.sp_id_type);
                 addField('Spouse ID Number', formData.sp_id_num);
                 addField('Spouse ID State', formData.sp_id_state);
+                addField('Spouse ID Issue', formData.sp_id_issue);
                 addField('Spouse ID Exp', formData.sp_id_exp);
                 yPos += sectionSpacing;
                 addSeparator();
@@ -434,9 +435,9 @@ const questionData = [
             addField('State', formData.addr_state);
             addField('Zip Code', formData.addr_zip);
             yPos += sectionSpacing;
+            
             addSeparator();
-            yPos += 2;
-
+            
             // FILING STATUS & DEPENDENTS
             addSectionTitle('04. FILING STATUS & DEPENDENTS');
             addField('Filing Status', formData.filing_status);
@@ -461,9 +462,9 @@ const questionData = [
                 });
             }
             yPos += sectionSpacing;
+            
             addSeparator();
-            yPos += 2;
-
+            
             // CHILDCARE
             if (formData.has_cc === 'Yes') {
                 addSectionTitle('CHILDCARE INFORMATION');
@@ -556,9 +557,9 @@ const questionData = [
             addField('Other Income / Comments', formData.other_comments);
             addField('Payment Method', formData.fee_method);
             yPos += sectionSpacing;
+            
             addSeparator();
-            yPos += 2;
-
+            
             // DIRECT DEPOSIT
             addSectionTitle('DIRECT DEPOSIT');
             addField('Bank Name', formData.bank_name);
@@ -566,9 +567,9 @@ const questionData = [
             addField('Account Number', formData.bank_acc);
             addField('Account Type', formData.bank_type);
             yPos += sectionSpacing;
+            
             addSeparator();
-            yPos += 2;
-
+            
             // SIGNATURES
             addSectionTitle('SIGNATURES');
             const sigTp = document.getElementById('sig_tp');
@@ -614,19 +615,22 @@ const questionData = [
                 }
             }
 
-            // FOOTER
+            // FOOTER - Simple y limpio
             const totalPages = doc.internal.getNumberOfPages();
             for (let i = 1; i <= totalPages; i++) {
                 doc.setPage(i);
-                doc.setFontSize(7);
-                doc.setTextColor(150, 150, 150);
-                doc.text('─────────────────────────────────────────────────────────────────────────────', pageWidth / 2, pageHeight - 15, { align: 'center' });
-                doc.setFontSize(9);
+                // Línea simple en lugar de caracteres
+                doc.setDrawColor(200, 200, 200);
+                doc.setLineWidth(0.3);
+                doc.line(margin, pageHeight - 18, pageWidth - margin, pageHeight - 18);
+                
+                doc.setFontSize(8);
                 doc.setTextColor(titleColor);
-                doc.text('DLA TAX SERVICES', pageWidth / 2, pageHeight - 10, { align: 'center' });
+                doc.text('DLA TAX SERVICES', pageWidth / 2, pageHeight - 12, { align: 'center' });
+                
                 doc.setFontSize(7);
                 doc.setTextColor(150, 150, 150);
-                doc.text(`Page ${i} of ${totalPages} | © 2026 DLA Tax Services`, pageWidth / 2, pageHeight - 5, { align: 'center' });
+                doc.text(`Page ${i} of ${totalPages} | © 2026`, pageWidth / 2, pageHeight - 6, { align: 'center' });
             }
 
             // Generar como base64
