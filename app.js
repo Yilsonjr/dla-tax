@@ -486,14 +486,16 @@ const questionData = [
                     fontSize: 8
                 },
                 columnStyles: {
-                    0: { cellWidth: 120 },  // Pregunta: 120mm
+                    0: { cellWidth: 140, minCellHeight: 8 },  // Pregunta: 140mm con wrap
                     1: { cellWidth: 45, halign: 'center' }  // Respuesta: 45mm
                 },
                 styles: {
                     fontSize: 8,
-                    cellPadding: 3,
+                    cellPadding: 4,
                     lineColor: [200, 200, 200],
-                    lineWidth: 0.1
+                    lineWidth: 0.1,
+                    overflow: 'linebreak',
+                    valign: 'middle'
                 },
                 alternateRowStyles: {
                     fillColor: [248, 248, 248]
