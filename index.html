@@ -74,7 +74,7 @@
                     </div>
                     <div>
                         <label class="label-title">SSN or ITIN</label>
-                        <input type="text" id="tp_ssn" placeholder="XXX-XX-XXXX" maxlength="9" required>
+                        <input type="text" id="tp_ssn" placeholder="XXX-XX-XXXX" maxlength="9" inputmode="numeric" pattern="[0-9]*" required>
                     </div>
                     <div>
                         <label class="label-title">Phone Number / Teléfono</label>
@@ -99,7 +99,7 @@
                                 <option value="Work Permit">Work Permit</option>
                             </select>
                         </div>
-                        <div><label class="label-title">ID Number</label><input type="text" id="tp_id_num"></div>
+                        <div><label class="label-title">ID Number</label><input type="text" id="tp_id_num" inputmode="numeric" pattern="[0-9]*"></div>
                         <div><label class="label-title">Issue State / Estado</label><input type="text" id="tp_id_state"></div>
                         <div><label class="label-title">Issue Date</label><input type="date" id="tp_id_issue"></div>
                         <div><label class="label-title">Exp. Date</label><input type="date" id="tp_id_exp"></div>
@@ -150,7 +150,7 @@
                         </div>
                         <div>
                             <label class="label-title">SSN / ITIN</label>
-                            <input type="text" id="sp_ssn" name="sp_ssn" maxlength="9">
+                            <input type="text" id="sp_ssn" name="sp_ssn" maxlength="9" inputmode="numeric" pattern="[0-9]*">
                         </div>
                         <div>
                             <label class="label-title">Occupation / Ocupación</label>
@@ -174,7 +174,7 @@
                                     <option value="Work Permit">Work Permit</option>
                                 </select>
                             </div>
-                            <div><label class="label-title">ID Number</label><input type="text" id="sp_id_num"></div>
+                            <div><label class="label-title">ID Number</label><input type="text" id="sp_id_num" inputmode="numeric" pattern="[0-9]*"></div>
                             <div><label class="label-title">Issue State</label><input type="text" id="sp_id_state"></div>
                             <div><label class="label-title">Exp. Date</label><input type="date" id="sp_id_exp"></div>
                         </div>
