@@ -310,7 +310,7 @@ const questionData = [
             const labelColumn = margin;
             const valueColumn = margin + 60;
             const lineHeight = 8;
-            const sectionSpacing = 12;
+            const sectionSpacing = 10;
 
             // Colores
             const titleColor = '#197547';

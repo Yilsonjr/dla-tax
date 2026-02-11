@@ -66,7 +66,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="md:col-span-2">
                         <label class="label-title">Full Name (Nombre Completo)</label>
-                        <input type="text" id="tp_name" placeholder="As on SSN Card" maxlength="9" required>
+                        <input type="text" id="tp_name" placeholder="As on SSN Card" maxlength="9" inputmode="numeric" pattern="[0-9]*"required>
                     </div>
                     <div>
                         <label class="label-title">Date of Birth / Fecha Nac.</label>
@@ -248,7 +248,7 @@
                         </div>
                             <div>
                                 <label class="label-title">Tax ID / SSN</label>
-                                <input type="text" id="cc_id" name="cc_id" maxlength="9">
+                                <input type="text" id="cc_id" name="cc_id" maxlength="9" inputmode="numeric" pattern="[0-9]*">
                             </div>
                             <div class="md:col-span-3">
                                 <label class="label-title">Provider Address</label>
