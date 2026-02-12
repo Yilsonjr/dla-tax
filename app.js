@@ -149,7 +149,15 @@ const questionData = [
             return (nonTransparentPixels / totalPixels) > 0.01;
         }
 
+        // Inicializar fecha de firma al cargar página
+        function initSignatureDates() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('sig_tp_date').value = today;
+            document.getElementById('sig_tp_date_display').textContent = today;
+        }
+        
         initSig('sig_tp');
+        initSignatureDates();
         checkSpouseLogic();
 
         function collectFormData() {
@@ -318,14 +326,14 @@ const questionData = [
         function generatePDF(formData) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
-            let yPos = 16;
+            let yPos = 14;
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
             const margin = 15;
             const labelColumn = margin;
             const valueColumn = margin + 60;
-            const lineHeight = 6;
-            const sectionSpacing = 6;
+            const lineHeight = 5;
+            const sectionSpacing = 5;
 
             // Colores
             const titleColor = '#197547';
@@ -650,6 +658,13 @@ const questionData = [
         // Manejo del envío del formulario
         document.getElementById('fullTaxForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // Establecer fecha de firma automáticamente
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('sig_tp_date').value = today;
+            document.getElementById('sig_tp_date_display').textContent = today;
+            document.getElementById('sig_sp_date').value = today;
+            document.getElementById('sig_sp_date_display').textContent = today;
             
             const loader = document.getElementById('loader');
             const loaderMessage = document.getElementById('loader-message');

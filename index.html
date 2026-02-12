@@ -362,7 +362,8 @@
                     <canvas id="sig_tp" class="signature-canvas"></canvas>
                     <div class="flex justify-between items-center mt-2">
                         <button type="button" onclick="clearSig('sig_tp')" class="text-[9px] font-bold text-red-500 uppercase tracking-tighter">Clear / Limpiar</button>
-                        <input type="date" id="sig_tp_date" class="w-auto text-xs py-1 border-none bg-slate-50">
+                        <span id="sig_tp_date_display" class="text-xs text-slate-500"></span>
+                        <input type="hidden" id="sig_tp_date">
                     </div>
                 </div>
                 <div id="sp_sig_card" class="bg-white border p-6 rounded-xl shadow-sm hidden">
@@ -370,7 +371,8 @@
                     <canvas id="sig_sp" class="signature-canvas"></canvas>
                     <div class="flex justify-between items-center mt-2">
                         <button type="button" onclick="clearSig('sig_sp')" class="text-[9px] font-bold text-red-500 uppercase tracking-tighter">Clear / Limpiar</button>
-                        <input type="date" id="sig_sp_date" class="w-auto text-xs py-1 border-none bg-slate-50">
+                        <span id="sig_sp_date_display" class="text-xs text-slate-500"></span>
+                        <input type="hidden" id="sig_sp_date">
                     </div>
                 </div>
             </div>
