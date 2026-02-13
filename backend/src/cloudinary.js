@@ -13,7 +13,7 @@ cloudinary.config({
  * @param {string} clientName - Nombre del cliente para el nombre del archivo
  * @returns {Promise<Object>} - URL y datos del archivo subido
  */
-async function uploadToCloudinary(pdfBuffer, clientName) {
+async function uploadToCloudinary(pdfBuffer, clientName, folder = 'dla-tax-documents') {
   try {
     // Sanitizar nombre del cliente
     const safeName = clientName
@@ -34,7 +34,7 @@ async function uploadToCloudinary(pdfBuffer, clientName) {
     // Subir a Cloudinary
     const result = await cloudinary.uploader.upload(dataURI, {
       public_id: fileName,
-      folder: 'dla-tax-documents',
+      folder: folder,
       resource_type: 'auto', // Detecta automáticamente el tipo de archivo
       format: 'pdf'
     });

@@ -6,13 +6,19 @@ const { uploadToCloudinary } = require('./cloudinary');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Middleware
+// CORS
 app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:5500',
+    'http://localhost:8080',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5500',
+    'http://127.0.0.1:8080',
     'https://yilsonjr.github.io',
-    'https://yilsonjr.github.io/dla-tax'
+    'https://yilsonjr.github.io/dla-tax',
+    'https://yilsonjr.github.io/dla-self-employed',
+    'https://dla-tax.onrender.com'
   ],
   methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true
@@ -48,8 +54,23 @@ app.post('/api/forms', async (req, res) => {
     // Convertir base64 a buffer
     const pdfBuffer = Buffer.from(pdf.split(',')[1], 'base64');
 
+    // Determinar carpeta en Cloudinary según tipo de formulario
+    const getCloudinaryFolder = (formType) => {
+        const folders = {
+            'self-employed': 'dla-self-employed',
+            'w-4': 'dla-tax-documents',
+            'w4': 'dla-tax-documents'
+        };
+        return folders[formType] || 'dla-tax-documents';
+    };
+    
+    const formType = data?.form_type || 'w4';
+    const cloudinaryFolder = getCloudinaryFolder(formType);
+    
+    console.log(`Tipo de formulario: ${formType} → Carpeta: ${cloudinaryFolder}`);
+
     // Subir a Cloudinary
-    const cloudinaryResult = await uploadToCloudinary(pdfBuffer, taxpayerName);
+    const cloudinaryResult = await uploadToCloudinary(pdfBuffer, taxpayerName, cloudinaryFolder);
     console.log('Archivo guardado en Cloudinary:', cloudinaryResult.fileName);
 
     console.log('=== FIN PROCESAMIENTO EXITOSO ===');
