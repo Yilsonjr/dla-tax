@@ -153,7 +153,6 @@ const questionData = [
         function initSignatureDates() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('sig_tp_date').value = today;
-            document.getElementById('sig_tp_date_display').textContent = today;
         }
         
         initSig('sig_tp');
@@ -658,13 +657,6 @@ const questionData = [
         // Manejo del envío del formulario
         document.getElementById('fullTaxForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            // Establecer fecha de firma automáticamente
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('sig_tp_date').value = today;
-            document.getElementById('sig_tp_date_display').textContent = today;
-            document.getElementById('sig_sp_date').value = today;
-            document.getElementById('sig_sp_date_display').textContent = today;
             
             const loader = document.getElementById('loader');
             const loaderMessage = document.getElementById('loader-message');
