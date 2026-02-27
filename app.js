@@ -543,8 +543,8 @@ const questionData = [
                     fontSize: 8
                 },
                 columnStyles: {
-                    0: { cellWidth: 140, minCellHeight: 7 },  // Pregunta: 140mm con wrap
-                    1: { cellWidth: 45, halign: 'center' }  // Respuesta: 45mm
+                    0: { cellWidth: 138, minCellHeight: 7 },  // Pregunta: 138mm con wrap
+                    1: { cellWidth: 43, halign: 'center' }  // Respuesta: 43mm
                 },
                 styles: {
                     fontSize: 8,

@@ -18,7 +18,8 @@ app.use(cors({
     'https://yilsonjr.github.io',
     'https://yilsonjr.github.io/dla-tax',
     'https://yilsonjr.github.io/dla-self-employed',
-    'https://dla-tax.onrender.com'
+    'https://dla-tax.onrender.com',
+    'https://form-tax.dlataxservice.com'
   ],
   methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true
